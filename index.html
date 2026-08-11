@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Greenhouse ສາຂາ 2 — ລະບົບຈັດການຮ້ານອາຫານ</title>
+<title>Greenhouse — ລະບົບຈັດການຮ້ານອາຫານ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700;900&family=IBM+Plex+Sans+Thai:wght@400;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
@@ -1024,7 +1024,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             <button class="btn btn-primary" onclick="goTo('pos')">🪑 ຈັດການໂຕະ</button>
           </div>
         </div>
-        <div class="stat-grid">
+        <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
           <div class="stat-card">
             <div class="stat-top">
               <div class="stat-icon" style="background:#FFF4F0">💰</div>
@@ -1032,6 +1032,14 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             </div>
             <div class="stat-val" id="d-rev">₭0</div>
             <div class="stat-label">ລາຍຮັບມື້ນີ້</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(184,137,43,.1)">🧮</div>
+              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">VAT</span>
+            </div>
+            <div class="stat-val" id="d-vat" style="color:var(--gold,#B8892B)">₭0</div>
+            <div class="stat-label">VAT ມື້ນີ້</div>
           </div>
           <div class="stat-card">
             <div class="stat-top">
@@ -1288,8 +1296,9 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
               📥 <span id="dl-btn-label">ດາວໂຫຼດຂໍ້ມູນ</span>
             </button>
           </div>
-          <div class="stat-grid">
+          <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(31,107,69,.1)">💰</div><span class="stat-trend up" id="sum-inc-trend">↑</span></div><div class="stat-val" id="sum-inc-val" style="color:var(--brand)">₭0</div><div class="stat-label" id="sum-inc-lbl">ລາຍຮັບ</div></div>
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(184,137,43,.1)">🧮</div><span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">VAT</span></div><div class="stat-val" id="sum-vat-val" style="color:var(--gold,#B8892B)">₭0</div><div class="stat-label">VAT</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(5,150,105,.1)">🧾</div><span class="stat-trend up" id="sum-bill-trend">—</span></div><div class="stat-val" id="sum-bill-val" style="color:var(--c-green)">0</div><div class="stat-label">ບິນ</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(220,38,38,.08)">💸</div><span class="stat-trend dn">—</span></div><div class="stat-val" id="rpt-total-exp" style="color:var(--c-red)">₭0</div><div class="stat-label">ລາຍຈ່າຍ</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(37,99,235,.08)">📈</div><span class="stat-trend up" id="rpt-profit-trend">—</span></div><div class="stat-val" id="rpt-profit-val" style="color:var(--c-blue)">₭0</div><div class="stat-label" id="rpt-profit-label">ກຳໄລ</div></div>
@@ -1460,7 +1469,8 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;padding:2px 11px 4px">ທີມງານ</div>
             <div class="set-nav-item" onclick="setTab('users',this)">👥 ຜູ້ໃຊ້</div>
             <div class="set-nav-item" onclick="setTab('roles',this)">🛡️ ບົດບາດ</div>
-            <div id="nav-reset-tab" class="set-nav-item" onclick="setTab('reset-tab',this)" style="color:#DC2626;margin-top:8px;border-top:1px solid rgba(220,38,38,.2);padding-top:10px">🗑️ ລຶບຂໍ້ມູນ</div>
+            <div class="set-nav-item" onclick="setTab('backup',this)" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">💾 ສຳຮອງຂໍ້ມູນ</div>
+            <div id="nav-reset-tab" class="set-nav-item" onclick="setTab('reset-tab',this)" style="color:#DC2626">🗑️ ລຶບຂໍ້ມູນ</div>
           </div>
           <div>
             <div id="st-store">
@@ -1540,7 +1550,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
                 <div class="perm-item"><span class="perm-label">QR Order ລູກຄ້າ</span><label class="toggle"><input type="checkbox" checked><span class="tog-slider"></span></label></div>
                 <div class="perm-item"><span class="perm-label">ສະສົມແຕ້ມ</span><label class="toggle"><input type="checkbox" checked><span class="tog-slider"></span></label></div>
               </div>
-              <div class="form-row mt-16"><div class="form-group"><label class="form-label">VAT % (ປິດການໃຊ້ງານ — ບໍ່ຄິດໄລ່ VAT)</label><input class="form-input" type="number" id="sys-vat-pct" value="0" min="0" max="100" disabled style="opacity:.5;cursor:not-allowed"></div><div class="form-group"><label class="form-label">ສະກຸນ</label><select class="form-input"><option>LAK (₭)</option><option>THB (฿)</option><option>USD ($)</option></select></div></div>
+              <div class="form-row mt-16"><div class="form-group"><label class="form-label">VAT %</label><input class="form-input" type="number" id="sys-vat-pct" value="10" min="0" max="100" onchange="applyStoreEverywhere()"></div><div class="form-group"><label class="form-label">ສະກຸນ</label><select class="form-input"><option>LAK (₭)</option><option>THB (฿)</option><option>USD ($)</option></select></div></div>
             </div>
             <div id="st-payment" class="hidden">
               <div class="set-sec-title">ຕັ້ງຄ່າ QR ຊຳລະ</div>
@@ -1585,6 +1595,18 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
                 <button class="btn btn-primary btn-sm" onclick="openRoleModal()">+ ສ້າງບົດບາດ</button>
               </div>
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px" id="roles-grid-st"></div>
+            </div>
+            <!-- ── BACKUP TAB ── -->
+            <div id="st-backup" class="hidden">
+              <div class="set-sec-title">💾 ສຳຮອງຂໍ້ມູນ</div>
+              <div style="background:var(--panel-bg2);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:16px">
+                <div style="font-size:13px;color:var(--t1);font-weight:700;margin-bottom:8px">ດາວໂຫລດຂໍ້ມູນທັງໝົດເປັນໄຟລ໌ .json</div>
+                <div style="font-size:12px;color:var(--t2);line-height:1.9">
+                  ຈະລວມ: ບິນ, ເມນູ+ໝວດ, ສາງ+ປະຫວັດເຄື່ອນໄຫວ, ລູກຄ້າ/ຄະແນນ, ລາຍຈ່າຍ, ຝາກຂາຍ, ໂຕະ, ບົດບາດ, ຜູ້ໃຊ້ (ບໍ່ລວມລະຫັດຜ່ານ)<br>
+                  ເກັບໄຟລ໌ໄວ້ບ່ອນປອດໄພ — ໃຊ້ອ້າງອິງ/ກວດຄືນຂໍ້ມູນໄດ້ໃນອະນາຄົດ (ບໍ່ໄດ້ໃຊ້ນຳເຂົ້າຄືນອັດຕະໂນມັດ)
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="exportBackupJSON()">📥 ດາວໂຫລດຂໍ້ມູນສຳຮອງ</button>
             </div>
             <div id="st-reset-tab" class="hidden">
               <div class="set-sec-title" style="color:#DC2626">🗑️ ລຶບຂໍ້ມູນ</div>
@@ -2431,6 +2453,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
           <option value="manager">ຜູ້ຈັດການ</option>
           <option value="staff">ພະນັກງານ</option>
           <option value="cashier">Cashier</option>
+          <option value="accounting">ບັນຊີ (Accounting)</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">ລະຫັດຜ່ານ</label><input class="form-input" type="password" id="u-pass" placeholder="••••••••"></div>
@@ -2601,6 +2624,7 @@ const RC = {
   manager: {label:'ຜູ້ຈັດການ', icon:'🏪', cls:'bb', navs:['dashboard','pos','menu','stock','reports','eod','loyalty','settings']},
   staff:   {label:'ພະນັກງານ', icon:'🧑', cls:'bg', navs:['pos','stock']},
   cashier: {label:'Cashier',   icon:'💵', cls:'by', navs:['dashboard','pos','menu','stock','loyalty']},
+  accounting: {label:'ບັນຊີ', icon:'🧮', cls:'bp', navs:['dashboard','pos','menu','stock','loyalty','reports']},
 };
 const NC = {
   dashboard:{label:'Dashboard',     icon:'🏠', sec:'ຫຼັກ'},
@@ -2637,7 +2661,8 @@ let USERS_DATA = [
   {id:1,name:'Admin',   email:'admin',  pass:'1234', role:'admin',   status:'online', last:'',clr:'#F97316'},
   {id:2,name:'Manager', email:'manager',pass:'1234', role:'manager', status:'online', last:'',clr:'#3B82F6'},
   {id:3,name:'Staff',   email:'staff',  pass:'1234', role:'staff',   status:'online', last:'',clr:'#22C55E'},
-  {id:4,name:'Cashier', email:'cashier',pass:'1234', role:'cashier', status:'online', last:'',clr:'#EAB308'}
+  {id:4,name:'Cashier', email:'cashier',pass:'1234', role:'cashier', status:'online', last:'',clr:'#EAB308'},
+  {id:5,name:'Accounting', email:'accounting',pass:'1234', role:'accounting', status:'online', last:'',clr:'#8B5CF6'}
 ];
 
 let ROLES_DATA = [
@@ -2645,6 +2670,7 @@ let ROLES_DATA = [
   {id:2,name:'ຜູ້ຈັດການ',icon:'📋',perms:{dashboard:true,pos:true,bills:true,tables:true,menu:true,users:false,roles:false,reports:true,settings:true}},
   {id:3,name:'ພະນັກງານ',icon:'👨‍🍳', perms:{dashboard:false,pos:true,bills:true,tables:true,menu:false,users:false,roles:false,reports:false,settings:false}},
   {id:4,name:'Cashier',icon:'💵',perms:{dashboard:false,pos:true,bills:true,tables:true,menu:false,users:false,roles:false,reports:false,settings:false}},
+  {id:5,name:'ບັນຊີ (Accounting)',icon:'🧮',perms:{dashboard:false,pos:true,bills:true,tables:true,menu:false,users:false,roles:false,reports:true,settings:false}},
 ];
 
 let BILLS = []
@@ -2899,8 +2925,9 @@ function redeemDiscount(points){
 const fmt=n=>'₭'+Number(n).toLocaleString();
 /* ── VAT rate from settings ── */
 function getVatRate(){
-  // VAT ຖືກປິດການໃຊ້ງານທັງໝົດຕາມການຮ້ອງຂໍ — ບໍ່ຄິດໄລ່ VAT ອີກຕໍ່ໄປ (ສາຂາ 2)
-  return 0;
+  const vatEl = document.getElementById('sys-vat-pct');
+  const pct = vatEl ? (parseFloat(vatEl.value)||0) : 10;
+  return pct/100;
 }
 function vatLabel(){
   const r = getVatRate();
@@ -2911,10 +2938,18 @@ function vatLabel(){
    ໃຊ້ສະເພາະສຳລັບ KPI/ລາຍງານລາຍຮັບ (Dashboard, EOD, P&L, chart)
    ຢ່າໃຊ້ກັບການສະຫຼຸບເງິນສົດ/ວິທີຊຳລະ (ຕ້ອງໃຊ້ bill.total ຕົວຈິງສະເໝີ) */
 function netRevenueOf(bill){
-  return (bill.total||0) - (bill.consignTotal||0);
+  // ລາຍຮັບ = ຍອດຂາຍລ້ວນໆ ບໍ່ລວມ VAT (VAT ແຍກອອກ ເພາະເປັນເງິນທີ່ຕ້ອງນຳສົ່ງລັດ ບໍ່ແມ່ນລາຍຮັບຮ້ານ)
+  return (bill.total||0) - (bill.vat||0) - (bill.consignTotal||0);
 }
 function sumNetRevenue(bills){
   return (bills||[]).reduce((a,b)=>a+netRevenueOf(b),0);
+}
+// ຍອດ VAT ຂອງໃບບິນໜຶ່ງ (ສຳລັບສະຫຼຸບ VAT ແຍກຕ່າງຫາກ)
+function vatOf(bill){
+  return bill.vat||0;
+}
+function sumVat(bills){
+  return (bills||[]).reduce((a,b)=>a+vatOf(b),0);
 }
 // ລາຍຮັບຕໍ່ລາຍການ (ຫັກລາຄາຝາກຂາຍອອກ ຖ້າມີ) — ໃຊ້ສະເພາະສຳລັບການລາຍງານ/Top10/ໝວດ, ບໍ່ໃຊ້ກັບໃບບິນ/ກະຕ່າທີ່ລູກຄ້າເຫັນ
 function netLineRevenue(bi){
@@ -2955,7 +2990,7 @@ function _loginHint(u){
   if(!u){ hint.textContent=''; return; }
   const matched = USERS_DATA.find(x=>(x.email===u||x.name===u));
   if(matched){
-    const roleMap={admin:'👑 Admin',manager:'🏪 ຜູ້ຈັດການ',staff:'🧑 ພະນັກງານ',cashier:'💵 Cashier'};
+    const roleMap={admin:'👑 Admin',manager:'🏪 ຜູ້ຈັດການ',staff:'🧑 ພະນັກງານ',cashier:'💵 Cashier',accounting:'🧮 ບັນຊີ'};
     hint.innerHTML = `<span style="color:rgba(255,255,255,.8)">${roleMap[matched.role]||matched.role} — ${matched.name}</span>`;
   } else {
     hint.textContent='';
@@ -3162,7 +3197,9 @@ function renderDash(){
   const today=new Date().toISOString().slice(0,10);
   const todayBills=BILLS.filter(b=>b.date===today && !b.voided);
   const paid=todayBills.reduce((a,b)=>a+netRevenueOf(b),0);
+  const todayVat=todayBills.reduce((a,b)=>a+vatOf(b),0);
   document.getElementById('d-rev').textContent=fmt(paid);
+  const dVatEl=document.getElementById('d-vat'); if(dVatEl) dVatEl.textContent=fmt(todayVat);
   document.getElementById('d-bills').textContent=todayBills.length;
   document.getElementById('d-tbl').textContent=`${TABLES.filter(t=>t.status==='busy').length}/${TABLES.length}`;
   document.getElementById('d-cust').textContent=CUSTOMERS.length;
@@ -4070,6 +4107,7 @@ function renderEOD(){
   const todayBills = BILLS.filter(b=>b.date===today && !b.voided);
   const voidedBills = BILLS.filter(b=>b.date===today && b.voided);
   const totalRevenue = todayBills.reduce((a,b)=>a+netRevenueOf(b),0);
+  const totalVat      = todayBills.reduce((a,b)=>a+vatOf(b),0);
   const totalBills   = todayBills.length;
   const totalVoided  = voidedBills.length;
 
@@ -4118,6 +4156,10 @@ function renderEOD(){
       <div class="card" style="text-align:center">
         <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ລາຍຈ່າຍ</div>
         <div style="font-size:26px;font-weight:900;color:var(--c-red)">${fmt(totalExp)}</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">VAT ລວມ</div>
+        <div style="font-size:26px;font-weight:900;color:var(--gold,#B8892B)">${fmt(totalVat)}</div>
       </div>
       <div class="card" style="text-align:center">
         <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ກຳໄລສຸດທິ</div>
@@ -5251,7 +5293,7 @@ function saveUser(){
   const fn=document.getElementById('u-fn').value.trim();const email=document.getElementById('u-email').value.trim();
   if(!fn||!email){toast('ໃສ່ຊື່ ແລ້ວ Email','error');return;}
   const role=document.getElementById('u-role').value;
-  const clrMap={admin:'#F97316',manager:'#3B82F6',staff:'#22C55E',cashier:'#EAB308'};
+  const clrMap={admin:'#F97316',manager:'#3B82F6',staff:'#22C55E',cashier:'#EAB308',accounting:'#8B5CF6'};
   const ln=document.getElementById('u-ln').value.trim();
   const pw = document.getElementById('u-pass')?.value.trim() || '';
   if(S.editUserId){
@@ -5653,8 +5695,9 @@ function sumGetData(){
     return d >= drpStart && d <= drpEnd;
   });
   const baseInc  = realBills.reduce((a,b)=>a+netRevenueOf(b),0);
+  const totalVat = realBills.reduce((a,b)=>a+vatOf(b),0);
   const totalExp = allExpenseEntries().filter(e=>e.date>=drpStart&&e.date<=drpEnd).reduce((a,e)=>a+e.amount,0);
-  return { baseInc, totalExp, profit:baseInc-totalExp, bills:realBills.length };
+  return { baseInc, totalVat, totalExp, profit:baseInc-totalExp, bills:realBills.length };
 }
 
 /* ── Build chart by granularity ── */
@@ -5798,11 +5841,12 @@ function sumBuildChart(){
 /* ── Main render ── */
 function renderSummaryTab(){
   drpUpdateLabel();
-  const { baseInc, totalExp, profit, bills } = sumGetData();
+  const { baseInc, totalVat, totalExp, profit, bills } = sumGetData();
   const realBills = BILLS.filter(b=>{ const d=b.date||''; return d>=drpStart&&d<=drpEnd; });
   const g=id=>document.getElementById(id);
   if(g('sum-inc-val'))      g('sum-inc-val').textContent=fmt(baseInc);
   if(g('sum-inc-lbl'))      g('sum-inc-lbl').textContent='ລາຍຮັບ';
+  if(g('sum-vat-val'))      g('sum-vat-val').textContent=fmt(totalVat);
   if(g('sum-bill-val'))     g('sum-bill-val').textContent=bills;
   if(g('rpt-total-exp'))    g('rpt-total-exp').textContent=fmt(totalExp);
   if(g('rpt-profit-val')){ g('rpt-profit-val').textContent=fmt(Math.abs(profit)); g('rpt-profit-val').style.color=profit>=0?'var(--c-blue)':'var(--c-red)'; }
@@ -6008,6 +6052,7 @@ function renderExpenseTab(){
 
 // rptExport: export CSV
 function rptExport(){
+  if(S.user?.role==='cashier'){ toast('Cashier ບໍ່ສາມາດດາວໂຫລດຂໍ້ມູນໄດ້','error'); return; }
   const isSingle = drpStart===drpEnd;
   const LAO_MN_S=['ມັງ','ກຸ','ມີ','ເມ','ພ','ມິ','ກ','ສ','ກັ','ຕ','ພ','ທ'];
   function shortD(ds){ const d=new Date(ds+'T00:00:00'); return d.getDate()+' '+LAO_MN_S[d.getMonth()]+' '+d.getFullYear(); }
@@ -6017,6 +6062,7 @@ function rptExport(){
   const totalInc    = periodBills.reduce((a,b)=>a+netRevenueOf(b),0);
   const periodExp   = allExpenseEntries().filter(e=>e.date>=drpStart&&e.date<=drpEnd);
   const totalExp    = periodExp.reduce((a,e)=>a+e.amount,0);
+  const totalVat    = periodBills.reduce((a,b)=>a+vatOf(b),0);
   const totalBills  = periodBills.length;
   const avgBill     = totalBills ? Math.round(totalInc/totalBills) : 0;
   const profit      = totalInc - totalExp;
@@ -6078,7 +6124,9 @@ function rptExport(){
   <Style ss:ID="s18"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Color="#333333"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
   <Style ss:ID="s19"><Alignment ss:Horizontal="Left" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1F6B45" ss:Pattern="Solid"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
   <Style ss:ID="s20"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#993C1D"/><Interior ss:Color="#FEF0EA" ss:Pattern="Solid"/><NumberFormat ss:Format="0.0%"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
-  <Style ss:ID="s21"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Color="#1F6B45" ss:Bold="1"/><NumberFormat ss:Format="0.0%"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>`;
+  <Style ss:ID="s21"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Color="#1F6B45" ss:Bold="1"/><NumberFormat ss:Format="0.0%"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
+  <Style ss:ID="s22"><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/><Font ss:FontName="Arial" ss:Size="13" ss:Bold="1" ss:Color="#8A6115"/><Interior ss:Color="#FBF1DD" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/></Borders></Style>
+  <Style ss:ID="s23"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#8A6115"/><Interior ss:Color="#FBF1DD" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>`;
 
   function C(v,sid,tp){
     tp=tp||'String';
@@ -6103,6 +6151,7 @@ function rptExport(){
   ws1+=EmptyRow();
   ws1+=`<Row ss:Height="60">
     ${Merge('\u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalInc)+' \u20ad',3,2,2)}
+    ${Merge('VAT \u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalVat)+' \u20ad',22,1,2)}
     ${Merge('\u0ea5\u0eb2\u0e8d\u0e88\u0ec8\u0eb2\u0e8d\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalExp)+' \u20ad',4,1,2)}
     ${Merge('\u0e81\u0eb3\u0ec4\u0ea5\u0eaa\u0eb8\u0e94\u0e97\u0eb4\n'+K(profit)+' \u20ad',5,2,2)}
   </Row>`;
@@ -6123,15 +6172,15 @@ function rptExport(){
   let ws2='';
   ws2+=Row(30, Merge('\u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a \u2014 \u0ea5\u0eb2\u0e8d\u0e81\u0eb2\u0e99\u0e9a\u0eb4\u0e99 ('+periodLabel+')',1,8));
   ws2+=EmptyRow();
-  ws2+=Row(22,...['\u0ec0\u0ea5\u0e81\u0e9a\u0eb4\u0e99','\u0ec2\u0e95\u0eb0','\u0ea7\u0eb1\u0e99\u0e97\u0eb5','\u0ec0\u0ea7\u0ea5\u0eb2','\u0ea5\u0eb2\u0e8d\u0e81\u0eb2\u0e99','\u0e88\u0eb3\u0e99\u0ea7\u0e99 (\u20ad)','\u0e8a\u0eb3\u0ea5\u0eb0','\u0e9c\u0ebc\u0ec9\u0eae\u0eb1\u0e9a'].map(h=>C(h,7)));
+  ws2+=Row(22,...['\u0ec0\u0ea5\u0e81\u0e9a\u0eb4\u0e99','\u0ec2\u0e95\u0eb0','\u0ea7\u0eb1\u0e99\u0e97\u0eb5','\u0ec0\u0ea7\u0ea5\u0eb2','\u0ea5\u0eb2\u0e8d\u0e81\u0eb2\u0e99','\u0e88\u0eb3\u0e99\u0ea7\u0e99 (\u20ad)','VAT (\u20ad)','\u0e8a\u0eb3\u0ea5\u0eb0','\u0e9c\u0ebc\u0ec9\u0eae\u0eb1\u0e9a'].map(h=>C(h,7)));
   let prevDate='';
   periodBills.forEach(b=>{
     const isAlt=b.date!==prevDate; prevDate=b.date;
     const sid=isAlt?12:13;
     const items=(b.items||[]).map(i=>`${i.n||i.name||'?'}\xd7${i.q||i.qty||1}`).join(', ');
-    ws2+=Row(28,C(b.id,12),C(b.table,18),C(b.date,18),C(b.time||'',18),C(items,13),C(b.total,14,'Number'),C(PAY_LBL[b.pay]||b.pay,18),C(b.by||'',17));
+    ws2+=Row(28,C(b.id,12),C(b.table,18),C(b.date,18),C(b.time||'',18),C(items,13),C(b.total,14,'Number'),C(b.vat||0,23,'Number'),C(PAY_LBL[b.pay]||b.pay,18),C(b.by||'',17));
   });
-  ws2+=Row(24,Merge('\u0ea5\u0ea7\u0ea1\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94',9,5),C(totalInc,15,'Number'),C('',6),C('',6));
+  ws2+=Row(24,Merge('\u0ea5\u0ea7\u0ea1\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94',9,5),C(totalInc,15,'Number'),C(totalVat,23,'Number'),C('',6),C('',6));
 
   // ════ SHEET 3: ລາຍຈ່າຍ ════
   let ws3='';
@@ -6182,7 +6231,7 @@ function rptExport(){
   // ════ Build SpreadsheetML XML ════
   const sheetNames=['1 \u0eaa\u0eb0\u0eab\u0ebc\u0eb8\u0e9a','2 \u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a (\u0e9a\u0eb4\u0e99)','3 \u0ea5\u0eb2\u0e8d\u0e88\u0ec8\u0eb2\u0e8d','4 \u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a\u0e95\u0eb2\u0ea1\u0eab\u0ea1\u0ea7\u0e94','5 \u0ec0\u0ea1\u0e99\u0eb9\u0e82\u0eb2\u0e8d\u0e94\u0eb5'];
   const sheetData=[ws1,ws2,ws3,ws4,ws5];
-  const colWidths=[[80,80,80,80,80],[120,50,70,50,340,80,70,60],[30,90,120,60,80,60,80],[120,80,100,60],[30,200,100,80,100,60]];
+  const colWidths=[[80,80,80,80,80,80],[120,50,70,50,340,80,70,70,60],[30,90,120,60,80,60,80],[120,80,100,60],[30,200,100,80,100,60]];
 
   const xml=`<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -6212,8 +6261,46 @@ ${sheetData[i]}
   toast(`\ud83d\udce5 Excel "${periodLabel}" \u0e94\u0eb2\u0ea7\u0ec2\u0eab\u0ebc\u0e94\u0ec1\u0ea5\u0ec9\u0ea7! (${totalBills} \u0e9a\u0eb4\u0e99)`,'success');
 }
 
+/* ── ສຳຮອງຂໍ້ມູນ — ດາວໂຫລດຂໍ້ມູນທັງໝົດເປັນ JSON (ບໍ່ລວມລະຫັດຜ່ານ) ── */
+function exportBackupJSON(){
+  if(S.user?.role !== 'admin'){ toast('ສຳຮອງຂໍ້ມູນໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
+  try{
+    const safeUsers = (USERS_DATA||[]).map(u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,last:u.last,clr:u.clr}));
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      store: { name: document.getElementById('sb-logo-name')?.textContent || '', branch: BRANCH_PATH||'' },
+      bills: BILLS||[],
+      menu: MENU||[],
+      categories: CATEGORIES||[],
+      stockItems: STOCK_ITEMS||[],
+      stockMovements: STOCK_MOVEMENTS||[],
+      customers: CUSTOMERS||[],
+      expenses: EXPENSES||[],
+      consignPayouts: CONSIGN_PAYOUTS||[],
+      tables: TABLES||[],
+      rolesData: ROLES_DATA||[],
+      users: safeUsers,
+      loyaltyConfig: LOYALTY_CONFIG||{}
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `greenhouse-backup-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ ດາວໂຫລດຂໍ້ມູນສຳຮອງແລ້ວ','success');
+  }catch(e){
+    console.error('exportBackupJSON error:', e);
+    toast('ເກີດຂໍ້ຜິດພາດ — ລອງໃໝ່','error');
+  }
+}
 function setTab(t,el){
-  ['store','system','payment','printer','notif','users','roles','reset-tab'].forEach(id=>document.getElementById(`st-${id}`)?.classList.add('hidden'));
+  ['store','system','payment','printer','notif','users','roles','backup','reset-tab'].forEach(id=>document.getElementById(`st-${id}`)?.classList.add('hidden'));
   document.querySelectorAll('.set-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById(`st-${t}`)?.classList.remove('hidden');
   el.classList.add('active');
@@ -6422,6 +6509,11 @@ function loadStoreFromStorage(){
     if(logo){
       STORE_INFO.logoData = logo;
       setLogoPreview(logo);
+    }
+    const vat = localStorage.getItem('greenhouse_vat_b2');
+    if(vat!=null){
+      const vatEl = document.getElementById('sys-vat-pct');
+      if(vatEl) vatEl.value = vat;
     }
   } catch(e){}
   liveApplyStore();
@@ -7895,7 +7987,7 @@ function deleteVoidedSaleMovement(id){
 
 /* ── STOCK ITEM CRUD ── */
 function openStockItemModal(id=null){
-  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
+  if(S.user?.role==='cashier'||S.user?.role==='accounting'){ toast('ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
   if(id && S.user?.role !== 'admin'){ toast('ແກ້ໄຂໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
   const s = id ? STOCK_ITEMS.find(x=>x.id===id) : null;
   const ov = document.createElement('div');
@@ -7951,7 +8043,7 @@ function _siToggleCup(){
   if(wrap) wrap.style.display = type==='cup' ? '' : 'none';
 }
 function saveStockItem(id){
-  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
+  if(S.user?.role==='cashier'||S.user?.role==='accounting'){ toast('ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
   if(id && S.user?.role !== 'admin'){ toast('ແກ້ໄຂໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
   const name = document.getElementById('si-name').value.trim();
   const type = document.getElementById('si-type').value;
@@ -8009,7 +8101,7 @@ function switchStockTab(tab, el){
 
 function renderStockView(){
   const stkBtns = document.getElementById('stock-header-btns');
-  if(stkBtns) stkBtns.style.display = S.user?.role==='cashier' ? 'none' : '';
+  if(stkBtns) stkBtns.style.display = (S.user?.role==='cashier'||S.user?.role==='accounting') ? 'none' : '';
   ['product','material'].forEach(w=>{
     const b = document.getElementById(`swh-${w}`);
     if(!b) return;
@@ -8126,7 +8218,7 @@ function openStockOutModal(){ _openStockMoveModal('out'); }
 let _smItems = [];
 let _smKind = 'in';
 function _openStockMoveModal(kind){
-  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
+  if(S.user?.role==='cashier'||S.user?.role==='accounting'){ toast('ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
   if(!STOCK_ITEMS.length){ toast('ຍັງບໍ່ມີລາຍການສາງ — ເພີ່ມລາຍການສາງກ່ອນ','error'); return; }
   _smKind = kind;
   _smItems = [{stockItemId: STOCK_ITEMS[0].id, qty:'', price: STOCK_ITEMS[0].price||''}];
@@ -8194,7 +8286,7 @@ function smRenderItems(){
     </div>`).join('');
 }
 function saveStockMove(kind){
-  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
+  if(S.user?.role==='cashier'||S.user?.role==='accounting'){ toast('ເບິ່ງລາຍການສາງໄດ້ຢ່າງດຽວ','error'); return; }
   const date = document.getElementById('sm-date')?.value;
   const note = document.getElementById('sm-note')?.value.trim()||'';
   const by = document.getElementById('sm-by')?.value.trim() || ((S.user&&S.user.name)||'ພະນັກງານ');
@@ -10385,7 +10477,7 @@ function helpTab(tab){
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Greenhouse ສາຂາ 2 — ລະບົບຈັດການຮ້ານອາຫານ</title>
+<title>Greenhouse — ລະບົບຈັດການຮ້ານອາຫານ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700;900&family=IBM+Plex+Sans+Thai:wght@400;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
