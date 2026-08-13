@@ -323,6 +323,24 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 #page-login .login-logo-icon{box-shadow:0 0 30px rgba(61,214,255,.45),0 0 60px rgba(61,214,255,.2),inset 0 1px 0 rgba(255,255,255,.08)!important;}
 .hud-btn{box-shadow:0 10px 30px rgba(61,214,255,.4),0 0 40px rgba(61,214,255,.22),inset 0 1px 0 rgba(255,255,255,.45)!important;}
 
+/* ── STAFF ALERT — big popup + repeating alert for new orders / call-staff ── */
+.staff-alert-overlay{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;background:rgba(5,10,18,.72);backdrop-filter:blur(4px);}
+.staff-alert-overlay.show{display:flex;animation:staffAlertFadeIn .25s ease;}
+@keyframes staffAlertFadeIn{from{opacity:0;}to{opacity:1;}}
+.staff-alert-box{position:relative;width:min(92vw,460px);background:linear-gradient(165deg,#132433,#0a1620);border:2px solid rgba(255,180,60,.7);border-radius:24px;padding:38px 30px 30px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 90px rgba(255,180,60,.35);animation:staffAlertPop .35s cubic-bezier(.34,1.56,.64,1),staffAlertPulse 1s ease-in-out infinite;}
+@keyframes staffAlertPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes staffAlertPulse{0%,100%{box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(255,180,60,.3);}50%{box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 110px rgba(255,180,60,.6);}}
+.staff-alert-icon{font-size:56px;margin-bottom:6px;animation:staffAlertBounce .6s ease-in-out infinite;}
+@keyframes staffAlertBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.staff-alert-title{font-size:24px;font-weight:900;color:#FFD166;letter-spacing:.06em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.staff-alert-table{font-size:16px;font-weight:800;color:#fff;margin-top:8px;}
+.staff-alert-items{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px;max-height:160px;overflow-y:auto;text-align:left;background:rgba(255,255,255,.05);border-radius:12px;padding:10px 14px;}
+.staff-alert-items div{padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.08);}
+.staff-alert-items div:last-child{border-bottom:none;}
+.staff-alert-btn{margin-top:22px;width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(90deg,#2E8B57,#3FAE7A);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(46,139,87,.45);letter-spacing:.03em;}
+.staff-alert-btn:active{transform:scale(.97);}
+.staff-alert-queue{margin-top:12px;font-size:11px;color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;}
+
 /* ── SIDEBAR ── */
 #app-shell{display:none;min-height:100vh;}
 /* ════ SIDEBAR — Modern Glassmorphism ════ */
@@ -798,6 +816,16 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
   box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 .cust-icn-btn:active{transform:scale(.92);}
+.cust-callstaff-btn{
+  height:38px;padding:0 14px;border-radius:20px;
+  background:rgba(255,255,255,.2);border:none;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  font-size:12.5px;font-weight:800;color:#fff;white-space:nowrap;
+  backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.15);
+  transition:all .15s;
+}
+.cust-callstaff-btn:active{transform:scale(.94);}
+.cust-callstaff-btn:disabled{opacity:.5;cursor:default;}
 
 /* ── Category tabs ── */
 .cust-cats{
@@ -1089,6 +1117,20 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 </div>
 
 <button id="snd-toggle" onclick="toggleSound()" title="Sound On/Off">🔊</button>
+
+<!-- ================================================================
+  STAFF ALERT — big popup for new customer orders / call-staff requests
+================================================================ -->
+<div id="staff-alert-overlay" class="staff-alert-overlay">
+  <div class="staff-alert-box" id="staff-alert-box">
+    <div class="staff-alert-icon" id="staff-alert-icon">🔔</div>
+    <div class="staff-alert-title" id="staff-alert-title">NEW ORDER</div>
+    <div class="staff-alert-table" id="staff-alert-table"></div>
+    <div class="staff-alert-items" id="staff-alert-items"></div>
+    <button class="staff-alert-btn" id="staff-alert-btn" onclick="acknowledgeStaffAlert()">✓ ຮັບຮູ້ / ACCEPT</button>
+    <div class="staff-alert-queue" id="staff-alert-queue"></div>
+  </div>
+</div>
 
 <!-- ================================================================
   PAGE 2 — SECURE LOGIN
@@ -2084,7 +2126,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             🛒
             <span id="cust-cart-notif" style="position:absolute;top:-3px;right:-3px;background:#FFF;color:#1F6B45;font-size:9px;font-weight:900;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
           </button>
-          
+          <button class="cust-callstaff-btn" id="cust-callstaff-btn" onclick="custCallStaff()" title="ເອີ້ນພະນັກງານ">🙋 ເອີ້ນພະນັກງານ</button>
         </div>
       </div>
       <div class="cust-cats" id="cust-cats"></div>
@@ -9477,6 +9519,94 @@ function playOrderBeep(){
   }catch(e){ console.log('beep error:',e); }
 }
 
+/* ================================================================
+   STAFF ALERT SYSTEM — big popup + repeating spoken alert (EN) for
+   new customer QR orders and "call staff" requests, until acknowledged.
+================================================================ */
+let _staffAlertQueue = [];
+let _staffAlertCurrent = null;
+let _staffAlertTimer = null;
+function _speakEN(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 1; u.pitch = 1; u.volume = 1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+// type: 'order' | 'call'.  itemsText: newline-separated item lines (order only).  fbKey: firebase node key to clear on ack (call only).
+function showStaffAlert(type, tableName, itemsText, fbKey){
+  // Only the logged-in staff app (never the customer QR page) should ever see this
+  const shell = document.getElementById('app-shell');
+  if(!S.user || !shell || shell.style.display==='none') return;
+  _staffAlertQueue.push({type, tableName, itemsText, fbKey});
+  if(!_staffAlertCurrent) _renderNextStaffAlert();
+  else _updateStaffAlertQueueLabel();
+}
+function _updateStaffAlertQueueLabel(){
+  const q = document.getElementById('staff-alert-queue');
+  if(q) q.textContent = _staffAlertQueue.length>0 ? `+ ${_staffAlertQueue.length} ລາຍການລໍຖ້າຢູ່` : '';
+}
+function _renderNextStaffAlert(){
+  if(_staffAlertQueue.length===0){
+    _staffAlertCurrent = null;
+    const ov = document.getElementById('staff-alert-overlay');
+    if(ov) ov.classList.remove('show');
+    if(_staffAlertTimer){ clearInterval(_staffAlertTimer); _staffAlertTimer=null; }
+    return;
+  }
+  _staffAlertCurrent = _staffAlertQueue.shift();
+  const { type, tableName, itemsText } = _staffAlertCurrent;
+  const icon  = document.getElementById('staff-alert-icon');
+  const title = document.getElementById('staff-alert-title');
+  const tbl   = document.getElementById('staff-alert-table');
+  const items = document.getElementById('staff-alert-items');
+  const speech = type==='call'
+    ? `Table ${tableName} is calling staff for assistance`
+    : `New order received from table ${tableName}`;
+  if(icon)  icon.textContent  = type==='call' ? '🙋' : '🔔';
+  if(title) title.textContent = type==='call' ? 'STAFF CALL REQUESTED' : 'NEW ORDER';
+  if(tbl)   tbl.textContent   = 'ໂຕະ ' + tableName;
+  if(items){
+    if(type==='call'){ items.style.display='none'; items.innerHTML=''; }
+    else{ items.style.display=''; items.innerHTML = itemsText ? itemsText.split('\n').map(l=>`<div>${l}</div>`).join('') : ''; }
+  }
+  _updateStaffAlertQueueLabel();
+  const ov = document.getElementById('staff-alert-overlay');
+  if(ov) ov.classList.add('show');
+  playOrderBeep();
+  _speakEN(speech);
+  if(_staffAlertTimer) clearInterval(_staffAlertTimer);
+  _staffAlertTimer = setInterval(()=>{ playOrderBeep(); _speakEN(speech); }, 4500);
+}
+function acknowledgeStaffAlert(){
+  const cur = _staffAlertCurrent;
+  if(_staffAlertTimer){ clearInterval(_staffAlertTimer); _staffAlertTimer=null; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(cur && cur.type==='call' && cur.fbKey && fbDB){
+    fbDB.ref(BRANCH_PATH+'staff_calls/'+cur.fbKey).remove().catch(()=>{});
+  }
+  setTimeout(_renderNextStaffAlert, 250);
+}
+// ── Customer QR page: "ເອີ້ນພະນັກງານ" (call staff) button ──
+function custCallStaff(){
+  const btn = document.getElementById('cust-callstaff-btn');
+  if(btn){
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    setTimeout(()=>{ btn.disabled=false; btn.style.opacity=''; }, 15000);
+  }
+  const t = TABLES.find(x=>x.id===S.custTable);
+  const tableName = t ? t.name : String(S.custTable||'');
+  if(fbDB){
+    const ref = fbDB.ref(BRANCH_PATH+'staff_calls').push();
+    ref.set({ tableId: S.custTable, tableName, time: Date.now() }).catch(()=>{});
+  }
+  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ລໍຖ້າບຶດນຶ່ງເດີ້');
+}
+
 function togglePassVis(){
   const inp=document.getElementById('login-pass');
   const btn=document.getElementById('pass-eye-btn');
@@ -10365,6 +10495,11 @@ function fbListenOrders(){
     const ord=snap.val(); if(!ord||ord.status!=='pending') return;
     fbHandleNewOrder(ord);
   });
+  // "ເອີ້ນພະນັກງານ" (call-staff) requests from the customer QR page
+  fbDB.ref(BRANCH_PATH+'staff_calls').on('child_added', snap=>{
+    const d = snap.val(); if(!d) return;
+    showStaffAlert('call', d.tableName||'', '', snap.key);
+  });
 }
 
 function fbListenTables(){
@@ -10611,6 +10746,8 @@ function fbHandleNewOrder(ord){
   playOrderBeep();
   const _rem = ord.remark ? ` · 📝 ${ord.remark}` : '';
   addNotif('order','📱 ລູກຄ້າ '+t.name+' ສັ່ງ '+items.length+' ລາຍການ'+_rem,'warning',t.id);
+  const _itemsSummary = items.map(i=>`${i.name}${i.variantName?' ('+i.variantName+')':''} x${i.qty}`).join('\n');
+  showStaffAlert('order', t.name, _itemsSummary);
   if(typeof currentPosTab!=='undefined'&&currentPosTab==='tables') renderTables();
   renderDash();
   // Mark order processed
@@ -11406,6 +11543,24 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 #page-login .login-logo-icon{box-shadow:0 0 30px rgba(61,214,255,.45),0 0 60px rgba(61,214,255,.2),inset 0 1px 0 rgba(255,255,255,.08)!important;}
 .hud-btn{box-shadow:0 10px 30px rgba(61,214,255,.4),0 0 40px rgba(61,214,255,.22),inset 0 1px 0 rgba(255,255,255,.45)!important;}
 
+/* ── STAFF ALERT — big popup + repeating alert for new orders / call-staff ── */
+.staff-alert-overlay{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;background:rgba(5,10,18,.72);backdrop-filter:blur(4px);}
+.staff-alert-overlay.show{display:flex;animation:staffAlertFadeIn .25s ease;}
+@keyframes staffAlertFadeIn{from{opacity:0;}to{opacity:1;}}
+.staff-alert-box{position:relative;width:min(92vw,460px);background:linear-gradient(165deg,#132433,#0a1620);border:2px solid rgba(255,180,60,.7);border-radius:24px;padding:38px 30px 30px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 90px rgba(255,180,60,.35);animation:staffAlertPop .35s cubic-bezier(.34,1.56,.64,1),staffAlertPulse 1s ease-in-out infinite;}
+@keyframes staffAlertPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes staffAlertPulse{0%,100%{box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(255,180,60,.3);}50%{box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 110px rgba(255,180,60,.6);}}
+.staff-alert-icon{font-size:56px;margin-bottom:6px;animation:staffAlertBounce .6s ease-in-out infinite;}
+@keyframes staffAlertBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.staff-alert-title{font-size:24px;font-weight:900;color:#FFD166;letter-spacing:.06em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.staff-alert-table{font-size:16px;font-weight:800;color:#fff;margin-top:8px;}
+.staff-alert-items{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px;max-height:160px;overflow-y:auto;text-align:left;background:rgba(255,255,255,.05);border-radius:12px;padding:10px 14px;}
+.staff-alert-items div{padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.08);}
+.staff-alert-items div:last-child{border-bottom:none;}
+.staff-alert-btn{margin-top:22px;width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(90deg,#2E8B57,#3FAE7A);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(46,139,87,.45);letter-spacing:.03em;}
+.staff-alert-btn:active{transform:scale(.97);}
+.staff-alert-queue{margin-top:12px;font-size:11px;color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;}
+
 /* ── SIDEBAR ── */
 #app-shell{display:none;min-height:100vh;}
 /* ════ SIDEBAR — Modern Glassmorphism ════ */
@@ -11877,6 +12032,16 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
   box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 .cust-icn-btn:active{transform:scale(.92);}
+.cust-callstaff-btn{
+  height:38px;padding:0 14px;border-radius:20px;
+  background:rgba(255,255,255,.2);border:none;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  font-size:12.5px;font-weight:800;color:#fff;white-space:nowrap;
+  backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.15);
+  transition:all .15s;
+}
+.cust-callstaff-btn:active{transform:scale(.94);}
+.cust-callstaff-btn:disabled{opacity:.5;cursor:default;}
 
 /* ── Category tabs ── */
 .cust-cats{
