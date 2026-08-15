@@ -7495,8 +7495,10 @@ function showCustPage(tbl){
   const _ctName = _ct ? _ct.name : `T${tbl}`;
   S.custTableName = _ctName;
   document.getElementById('cust-tbl-lbl').textContent=`ໂຕະ ${_ctName} · ${STORE_INFO.name||'Greenhouse'}`;
+  S.custPageOpenedAt = Date.now();
   renderCustCatTabs();
   renderCustMenu();
+  _custStartLoadingPoll();
 }
 function renderCustCatTabs(){
   const el=document.getElementById('cust-cats');
@@ -7517,9 +7519,38 @@ function setCustCat(c,el){
   el.classList.add('active');
   renderCustMenu();
 }
+// Poll while the customer page is still waiting on the first Firebase sync — once
+// MENU/CATEGORIES arrive the live fbListenMenu()/fbListenCategories() listeners take
+// over and re-render immediately, so this just needs to keep the loading/retry
+// message in cust-body accurate (elapsed time) until then, then stop.
+let _custLoadingPoll = null;
+function _custStartLoadingPoll(){
+  if(_custLoadingPoll) return;
+  _custLoadingPoll = setInterval(()=>{
+    if(MENU.length>0 || CATEGORIES.length>0){
+      clearInterval(_custLoadingPoll); _custLoadingPoll=null;
+      return;
+    }
+    if(typeof renderCustMenu==='function') renderCustMenu();
+  }, 3000);
+}
 function renderCustMenu(){
   const items = custCat==='ທັງໝົດ' ? MENU : MENU.filter(m=>m.cat===custCat);
   if(!items.length){
+    // Distinguish "nothing has synced from Firebase yet" (still loading) from a
+    // genuinely empty category, so customers/testers see an accurate, actionable
+    // message instead of a misleading "no menu" when the real cause is a slow or
+    // failed connection. After 15s of still-loading, show a manual retry button.
+    const stillLoading = MENU.length===0 && CATEGORIES.length===0;
+    if(stillLoading){
+      const elapsed = Date.now() - (S.custPageOpenedAt || Date.now());
+      if(elapsed > 15000){
+        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">📵</div><div style="font-size:15px;font-weight:600">ບໍ່ສາມາດໂຫລດເມນູໄດ້</div><div style="font-size:12px;margin-top:6px;margin-bottom:16px">ກວດສອບອິນເຕີເນັດ ແລ້ວກົດລອງໃໝ່</div><button onclick="location.reload()" style="padding:10px 24px;border-radius:12px;border:none;background:#1F6B45;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔄 ລອງໃໝ່</button></div>`;
+      } else {
+        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:40px;margin-bottom:12px;display:inline-block;animation:spinSync 1s linear infinite">🔄</div><div style="font-size:15px;font-weight:600">ກຳລັງໂຫລດເມນູ...</div></div>`;
+      }
+      return;
+    }
     document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">🍽️</div><div style="font-size:15px;font-weight:600">ໝວດນີ້ຍັງບໍ່ມີເມນູ</div></div>`;
     return;
   }
