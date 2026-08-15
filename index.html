@@ -2227,11 +2227,23 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             🛒
             <span id="cust-cart-notif" style="position:absolute;top:-3px;right:-3px;background:#FFF;color:#1F6B45;font-size:9px;font-weight:900;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
           </button>
+          <button class="cust-icn-btn" id="cust-bill-btn" onclick="showCustBill()" title="ບິນຂອງຂ້ອຍ">🧾</button>
+          <button class="cust-icn-btn" id="cust-random-btn" onclick="openRandomPicker()" title="ສຸ່ມເມນູ">🎲</button>
           <button class="cust-callstaff-btn" id="cust-callstaff-btn" onclick="custCallStaff()" title="ເອີ້ນພະນັກງານ">🙋 ເອີ້ນພະນັກງານ</button>
         </div>
       </div>
       <div class="cust-cats" id="cust-cats"></div>
     </div>
+  </div>
+
+  <!-- Random-pick banner — fun way to decide when the customer can't choose -->
+  <div onclick="openRandomPicker()" style="margin:14px 16px 0;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#FFB088,#FF7A59);display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 14px rgba(255,122,89,.3);-webkit-tap-highlight-color:transparent">
+    <div style="font-size:28px">🎲</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:#fff">ບໍ່ຮູ້ຈະກິນຫຍັງ?</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.9);margin-top:1px">ໃຫ້ພວກເຮົາສຸ່ມເມນູໃຫ້ທ່ານເລີຍ!</div>
+    </div>
+    <div style="font-size:13px;font-weight:800;color:#fff">ສຸ່ມ ›</div>
   </div>
 
   <!-- Menu content -->
@@ -2857,6 +2869,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
         <div style="display:flex;align-items:center;gap:6px">
           <button onclick="event.stopPropagation();openMoveModal()" style="padding:5px 10px;border-radius:var(--r8);border:1.5px solid var(--bdr);background:var(--panel-pg2);cursor:pointer;font-size:11px;font-weight:700;color:var(--t2);font-family:inherit">↔️ ຍ້າຍ</button>
           <button onclick="openMergeModal()" style="padding:5px 10px;border-radius:var(--r8);border:1.5px solid var(--bdr);background:var(--panel-pg2);cursor:pointer;font-size:11px;font-weight:700;color:var(--t2);font-family:inherit">🔗 ລວມ</button>
+          <button id="tom-clean-btn" onclick="tomClean()" title="ໃຊ້ຖ້າໂຕະນີ້ຄ້າງຢູ່ຜິດພາດ (ບໍ່ອອກບິນ)" style="padding:5px 10px;border-radius:var(--r8);border:1.5px solid rgba(220,38,38,.25);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:#DC2626;font-family:inherit">🧹 ລ້າງໂຕະ</button>
           <button onclick="tomSaveAndClose()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--panel-pg);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--t2);flex-shrink:0">✕</button>
         </div>
       </div>
@@ -2989,6 +3002,38 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
       <button onclick="closeModal('modal-cart')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ແກ້ໄຂ</button>
       <button onclick="custConfirmOrder()" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#DC2626);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">✅ ຢືນຢັນ Order</button>
     </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  CUSTOMER BILL MODAL — running total of everything ordered so far
+================================================================ -->
+<div class="modal-bd hidden" id="modal-custbill" style="align-items:flex-end;padding:0">
+  <div style="background:#fff;color:#1C1917;border-radius:22px 22px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;max-height:85vh;overflow-y:auto;animation:fadeUp .3s ease">
+    <div style="font-size:17px;font-weight:800;margin-bottom:4px;color:#1C1917">🧾 ບິນຂອງທ່ານ</div>
+    <div style="font-size:12px;color:#9CA3AF;margin-bottom:16px" id="custbill-tbl-lbl">ໂຕະ —</div>
+    <div id="custbill-list"></div>
+    <div class="divider light"></div>
+    <div id="custbill-sum"></div>
+    <div style="font-size:11px;color:#9CA3AF;margin:12px 0 10px;text-align:center">⚠️ ຍອດນີ້ອາດປ່ຽນແປງໄດ້ ຫາກມີການສັ່ງເພີ່ມ — ຍອດຈິງໃຫ້ອີງໃສ່ໃບບິນຈາກພະນັກງານ</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeModal('modal-custbill')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ປິດ</button>
+      <button onclick="custRequestCheckout()" id="custbill-checkout-btn" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#143F29);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">🧾 ຮ້ອງເຊັກບິນ / ຄິດເງິນ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  RANDOM MENU PICKER — for customers who can't decide what to order
+================================================================ -->
+<div class="modal-bd hidden" id="modal-randompick" style="align-items:flex-end;padding:0">
+  <div style="background:#fff;color:#1C1917;border-radius:22px 22px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;max-height:85vh;overflow-y:auto;animation:fadeUp .3s ease">
+    <div style="font-size:17px;font-weight:800;margin-bottom:4px;color:#1C1917">🎲 ສຸ່ມເມນູ</div>
+    <div style="font-size:12px;color:#9CA3AF;margin-bottom:14px">ບໍ່ຮູ້ຈະສັ່ງຫຍັງ? ເລືອກໝວດແລ້ວກົດສຸ່ມ — ຈະຕິກໝວດດຽວ ຫຼື ຫຼາຍໝວດກໍ່ໄດ້</div>
+    <div id="randompick-cats" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+    <div id="randompick-result"></div>
+    <button id="randompick-spin-btn" onclick="custDoRandomPick()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#FFB088,#FF7A59);color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(255,122,89,.4);margin-top:4px">🎲 ສຸ່ມເລີຍ!</button>
+    <button onclick="closeModal('modal-randompick')" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;margin-top:8px">ປິດ</button>
   </div>
 </div>
 
@@ -5437,6 +5482,9 @@ function tomSaveAndClose(){
 
 function tomClean(){
   const t = TABLES.find(x => x.id === tomTableId);
+  if(t && (t.orders.length>0 || t.amount>0 || (t.custPending||[]).length>0)){
+    if(!confirm(`ລ້າງ Order ທັງໝົດຂອງ "${t.name}" ອອກ? (ໃຊ້ສະເພາະຖ້າໂຕະນີ້ຄ້າງຢູ່ຜິດພາດ — ຂໍ້ມູນ Order ຈະຫາຍ, ບໍ່ໄດ້ອອກເປັນບິນ)`)) return;
+  }
   if(t){ t.status='free'; t.orders=[]; t.custPending=[]; t.staffCart={}; t.hasNewOrder=false; t.amount=0; if(fbDB) fbSaveOneTable(tomTableId); }
   tomCart = {};
   closeModal('modal-tbldet');
@@ -7447,15 +7495,21 @@ function showCustPage(tbl){
   const _ctName = _ct ? _ct.name : `T${tbl}`;
   S.custTableName = _ctName;
   document.getElementById('cust-tbl-lbl').textContent=`ໂຕະ ${_ctName} · ${STORE_INFO.name||'Greenhouse'}`;
+  renderCustCatTabs();
+  renderCustMenu();
+}
+function renderCustCatTabs(){
+  const el=document.getElementById('cust-cats');
+  if(!el) return;
   const custCats=['ທັງໝົດ',...CATEGORIES.map(c=>c.name)];
-  document.getElementById('cust-cats').innerHTML=custCats.map((c,i)=>{
+  el.innerHTML=custCats.map((c,i)=>{
     const catObj=i===0?null:CATEGORIES[i-1];
     const thumb=catObj&&catObj.img
       ? `<img src="${catObj.img}" style="width:16px;height:16px;border-radius:3px;object-fit:cover;">`
       : '';
-    return `<button class="cust-cat-btn ${i===0?'active':''}" onclick="setCustCat('${c}',this)">${thumb} ${c}</button>`;
+    const isActive = c===custCat;
+    return `<button class="cust-cat-btn ${isActive?'active':''}" onclick="setCustCat('${c}',this)">${thumb} ${c}</button>`;
   }).join('');
-  renderCustMenu();
 }
 function setCustCat(c,el){
   custCat=c;
@@ -9551,48 +9605,31 @@ function custConfirmOrder(){
     </div>`;
   }).join('');
 
+  // Lightweight, non-blocking success confirmation — does NOT close the tab or
+  // replace the page, so the customer lands right back on the menu and can
+  // keep ordering more items without re-scanning the QR code.
   const successDiv = document.createElement('div');
   successDiv.id = '_order_success';
-  successDiv.style.cssText = 'position:fixed;inset:0;background:#1F6B45;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Noto Sans Lao","IBM Plex Sans Thai",sans-serif;padding:32px 24px;text-align:center;';
-
-  let _countdown = 3;
+  successDiv.style.cssText = 'position:fixed;inset:0;background:rgba(31,107,69,.96);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Noto Sans Lao","IBM Plex Sans Thai",sans-serif;padding:32px 24px;text-align:center;opacity:0;transition:opacity .25s ease';
   successDiv.innerHTML = `
-    <div style="font-size:90px;margin-bottom:16px">✅</div>
-    <div style="font-size:30px;font-weight:900;color:#fff;margin-bottom:10px">ສ່ງ Order ແລ້ວ!</div>
-    <div style="font-size:16px;color:rgba(255,255,255,.9);line-height:1.8;margin-bottom:32px">
-      ພະນັກງານໄດ້ຮັບ Order ຂອງທ່ານ<br>ກະລຸນາລໍຖ້າສັກຄູ່ 🙏
+    <div style="font-size:80px;margin-bottom:16px">✅</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:10px">ສ່ງ Order ແລ້ວ!</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.9);line-height:1.8;margin-bottom:28px">
+      ພະນັກງານໄດ້ຮັບ Order ຂອງທ່ານ<br>ສາມາດສັ່ງເພີ່ມໄດ້ເລີຍ 🙏
       ${remark ? '<br><span style="font-size:13px;opacity:.8">📝 '+remark+'</span>' : ''}
     </div>
-    <div id="_close_countdown" style="font-size:15px;color:rgba(255,255,255,.7);margin-bottom:20px">ປິດໜ້ານີ້ອັດຕະໂນມັດໃນ <span id="_cd_num">3</span> ວິນາທີ...</div>
-    <button onclick="_forceClose()" style="width:100%;max-width:300px;padding:18px;border-radius:16px;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-bottom:16px">
-      ປິດ Browser ທັນທີ
+    <button onclick="_closeOrderSuccess()" style="width:100%;max-width:280px;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">
+      ສັ່ງອາຫານຕໍ່
     </button>
-    <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.8">ຕ້ອງການ Order ເພີ່ມ?<br>Scan QR Code ຢູ່ໂຕະຄືນໃໝ່</div>
   `;
   document.body.appendChild(successDiv);
+  requestAnimationFrame(()=>{ successDiv.style.opacity='1'; });
 
-  // Countdown timer
-  const _cdTimer = setInterval(()=>{
-    _countdown--;
-    const el = document.getElementById('_cd_num');
-    if(el) el.textContent = _countdown;
-    if(_countdown <= 0){ clearInterval(_cdTimer); _forceClose(); }
-  }, 1000);
-
-  function _forceClose(){
-    clearInterval(_cdTimer);
-    // Replace history so back button won't return to order page
-    try{ window.history.replaceState(null,'','about:blank'); }catch(e){}
-    // Try close tab
-    try{ window.close(); }catch(e){}
-    // Fallback after 400ms — replace entire page content (no login visible)
-    setTimeout(()=>{
-      try{
-        document.open();
-        document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ຂອບໃຈ</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#1F6B45;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;text-align:center;padding:24px}</style></head><body><div><div style="font-size:80px;margin-bottom:16px">✅</div><div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:10px">ຂອບໃຈທີ່ໃຊ້ບໍລິການ!</div><div style="font-size:15px;color:rgba(255,255,255,.8);line-height:1.8">ພະນັກງານໄດ້ຮັບ Order ແລ້ວ<br>ກະລຸນາລໍຖ້າ 🙏<br><br><span style="font-size:13px;opacity:.7">ຕ້ອງການ Order ໃໝ່ — Scan QR Code</span></div></div></body></html>');
-        document.close();
-      }catch(e){ document.body.innerHTML='<div style="background:#1F6B45;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center"><div style="color:#fff"><div style="font-size:60px">✅</div><div style="font-size:22px;font-weight:900;margin:12px 0">ຂອບໃຈ!</div><div>Scan QR ເພື່ອ Order ໃໝ່</div></div></div>'; }
-    }, 400);
+  const _successTimer = setTimeout(_closeOrderSuccess, 2200);
+  function _closeOrderSuccess(){
+    clearTimeout(_successTimer);
+    successDiv.style.opacity = '0';
+    setTimeout(()=>{ successDiv.remove(); }, 250);
   }
 }
 
@@ -9668,26 +9705,28 @@ function _renderNextStaffAlert(){
   const teleBr = document.getElementById('staff-alert-tele-br');
   const speech = type==='call'
     ? `Table ${tableName} is calling staff for assistance`
+    : type==='checkout'
+    ? `Table ${tableName} is requesting the bill`
     : `New order received from table ${tableName}`;
   const randId = Math.floor(1000 + Math.random()*9000);
   if(icon){
-    icon.textContent = type==='call' ? '🖐️' : '🔔';
-    icon.className = 'hud-alert-icon ' + (type==='call' ? 'pulse-call' : 'pulse-order');
+    icon.textContent = type==='call' ? '🖐️' : type==='checkout' ? '🧾' : '🔔';
+    icon.className = 'hud-alert-icon ' + (type==='call' || type==='checkout' ? 'pulse-call' : 'pulse-order');
   }
-  if(label)  label.textContent  = type==='call' ? 'CALL WAITER' : 'NEW ORDER';
+  if(label)  label.textContent  = type==='call' ? 'CALL WAITER' : type==='checkout' ? 'CHECKOUT REQUEST' : 'NEW ORDER';
   if(tbl)    tbl.textContent    = tableName;
-  if(teleBl) teleBl.textContent = (type==='call' ? 'REQ#' : 'ORD#') + randId;
-  if(teleBr) teleBr.textContent = type==='call' ? 'ASSIST NEEDED' : 'PRIORITY: HIGH';
+  if(teleBl) teleBl.textContent = (type==='order' ? 'ORD#' : 'REQ#') + randId;
+  if(teleBr) teleBr.textContent = type==='call' ? 'ASSIST NEEDED' : type==='checkout' ? 'BILL REQUESTED' : 'PRIORITY: HIGH';
   if(items){
-    if(type==='call'){
+    if(type==='call' || type==='checkout'){
       items.className = 'hud-alert-items call-msg';
-      items.innerHTML = 'Customer is requesting assistance';
+      items.innerHTML = type==='checkout' ? 'Customer would like to check out and pay' : 'Customer is requesting assistance';
     } else {
       items.className = 'hud-alert-items';
       items.innerHTML = itemsText ? itemsText.split('\n').map(l=>`<div class="row">${l}</div>`).join('') : '';
     }
   }
-  if(btn) btn.textContent = type==='call' ? 'ACCEPT' : 'ACCEPT ORDER';
+  if(btn) btn.textContent = type==='order' ? 'ACCEPT ORDER' : 'ACCEPT';
   _updateStaffAlertQueueLabel();
   const ov = document.getElementById('staff-alert-overlay');
   if(ov) ov.classList.add('show');
@@ -9700,7 +9739,7 @@ function acknowledgeStaffAlert(){
   const cur = _staffAlertCurrent;
   if(_staffAlertTimer){ clearInterval(_staffAlertTimer); _staffAlertTimer=null; }
   try{ speechSynthesis.cancel(); }catch(e){}
-  if(cur && cur.type==='call' && cur.fbKey && fbDB){
+  if(cur && (cur.type==='call'||cur.type==='checkout') && cur.fbKey && fbDB){
     fbDB.ref(BRANCH_PATH+'staff_calls/'+cur.fbKey).remove().catch(()=>{});
   }
   setTimeout(_renderNextStaffAlert, 250);
@@ -9721,6 +9760,144 @@ function custCallStaff(){
     ref.set({ tableId: S.custTable, tableName, time: Date.now() }).catch(()=>{});
   }
   toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ລໍຖ້າບຶດນຶ່ງເດີ້');
+}
+
+// ── Customer QR page: "ບິນຂອງທ່ານ" — running total of everything ordered so far ──
+function showCustBill(){
+  const t = TABLES.find(x=>x.id===S.custTable);
+  const tblLbl = document.getElementById('custbill-tbl-lbl');
+  if(tblLbl) tblLbl.textContent = 'ໂຕະ ' + (t ? t.name : (S.custTableName||S.custTable||'—'));
+
+  // Combine already-sent orders + not-yet-sent pending items, grouped by key
+  const all = [...((t&&t.orders)||[]), ...((t&&t.custPending)||[])];
+  const grouped = {};
+  all.forEach(o=>{
+    const k = o.key || o.name;
+    if(!grouped[k]) grouped[k] = {name:o.name, variantName:o.variantName||'', price:o.price, qty:0, free:0, img:o.img||null, menuId:o.menuId||0};
+    grouped[k].qty += o.qty||0;
+    grouped[k].free += o.free||0;
+  });
+  const items = Object.values(grouped);
+
+  const listEl = document.getElementById('custbill-list');
+  if(listEl){
+    listEl.innerHTML = items.length ? items.map(i=>{
+      const [ibg,ifg] = CARD_COLORS[(i.menuId||0)%CARD_COLORS.length];
+      const netQty = Math.max(0, i.qty-i.free);
+      const thumb = i.img
+        ? `<img src="${i.img}" style="width:40px;height:40px;object-fit:cover;border-radius:9px;flex-shrink:0">`
+        : `<div style="width:40px;height:40px;border-radius:9px;background:${ibg};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:${ifg};flex-shrink:0">${(i.variantName||i.name).slice(0,2)}</div>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6">
+        ${thumb}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#1C1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.name}${i.variantName?` <span style="font-size:11px;font-weight:500;opacity:.65">(${i.variantName})</span>`:''}${i.free>0?` <span style="font-size:9px;font-weight:800;color:#DC2626">🎁ຟຣີx${i.free}</span>`:''}</div>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:1px">${fmt(i.price)} × ${i.qty}</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#1C1917">${fmt(i.price*netQty)}</div>
+      </div>`;
+    }).join('') : `<div style="text-align:center;padding:28px 16px;color:#9CA3AF;font-size:13px">ຍັງບໍ່ໄດ້ສັ່ງລາຍການໃດ</div>`;
+  }
+
+  const sub = items.reduce((a,i)=>a+i.price*Math.max(0,i.qty-i.free), 0);
+  const vat = Math.round(sub*getVatRate());
+  const sumEl = document.getElementById('custbill-sum');
+  if(sumEl){
+    sumEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:4px"><span>ລວມ</span><span>${fmt(sub)}</span></div>
+      ${vat>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:4px"><span>${vatLabel()}</span><span>${fmt(vat)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:19px;font-weight:900;padding-top:9px;border-top:1.5px solid #E5E7EB;margin-top:7px;color:#1C1917"><span>ທັງໝົດ</span><span style="color:#1F6B45">${fmt(sub+vat)}</span></div>`;
+  }
+
+  const ckBtn = document.getElementById('custbill-checkout-btn');
+  if(ckBtn) ckBtn.style.display = items.length ? '' : 'none';
+
+  openModal('modal-custbill');
+}
+
+// ── Customer QR page: "ຮ້ອງເຊັກບິນ / ຄິດເງິນ" — notify staff the customer wants to pay ──
+function custRequestCheckout(){
+  const btn = document.getElementById('custbill-checkout-btn');
+  if(btn){
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    setTimeout(()=>{ btn.disabled=false; btn.style.opacity=''; }, 15000);
+  }
+  const t = TABLES.find(x=>x.id===S.custTable);
+  const tableName = t ? t.name : String(S.custTable||'');
+  if(fbDB){
+    const ref = fbDB.ref(BRANCH_PATH+'staff_calls').push();
+    ref.set({ tableId: S.custTable, tableName, time: Date.now(), kind:'checkout' }).catch(()=>{});
+  }
+  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ພະນັກງານກຳລັງມາເກັບເງິນ');
+  closeModal('modal-custbill');
+}
+
+// ── Customer QR page: "🎲 ສຸ່ມເມນູ" — random menu picker for indecisive customers ──
+const RANDOM_PICK_DEFAULT_CATS = ['ອາຫານປະເພດເສັ້ນ','ອາຫານປະເພດເຂົ້າ','Stake & Berger'];
+function openRandomPicker(){
+  const wrap = document.getElementById('randompick-cats');
+  if(wrap){
+    wrap.innerHTML = CATEGORIES.map(c=>{
+      const checked = RANDOM_PICK_DEFAULT_CATS.includes(c.name) ? 'checked' : '';
+      return `<label style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:20px;border:1.5px solid #E5E7EB;font-size:12px;font-weight:700;color:#374151;cursor:pointer;user-select:none">
+        <input type="checkbox" class="randompick-cat-chk" value="${c.name.replace(/"/g,'&quot;')}" ${checked} style="width:15px;height:15px;accent-color:#FF7A59">
+        ${c.name}
+      </label>`;
+    }).join('');
+  }
+  const resultEl = document.getElementById('randompick-result');
+  if(resultEl) resultEl.innerHTML = '';
+  const spinBtn = document.getElementById('randompick-spin-btn');
+  if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມເລີຍ!'; }
+  openModal('modal-randompick');
+}
+function custDoRandomPick(){
+  const checked = Array.from(document.querySelectorAll('.randompick-cat-chk:checked')).map(el=>el.value);
+  if(!checked.length){ toast('ຕິກຢ່າງໜ້ອຍ 1 ໝວດກ່ອນ','error'); return; }
+  const pool = MENU.filter(m => m.avail && checked.includes(m.cat));
+  if(!pool.length){ toast('ໝວດທີ່ເລືອກຍັງບໍ່ມີເມນູທີ່ພ້ອມຂາຍ','error'); return; }
+
+  const spinBtn = document.getElementById('randompick-spin-btn');
+  if(spinBtn){ spinBtn.disabled = true; spinBtn.style.opacity = '.6'; }
+
+  const resultEl = document.getElementById('randompick-result');
+  const final = pool[Math.floor(Math.random()*pool.length)];
+
+  // Fun "slot machine" shuffle reveal before landing on the final pick
+  let step = 0;
+  const totalSteps = 10;
+  const shuffleTimer = setInterval(()=>{
+    step++;
+    const m = pool[Math.floor(Math.random()*pool.length)];
+    _renderRandomPickCard(resultEl, m, false);
+    if(step >= totalSteps){
+      clearInterval(shuffleTimer);
+      _renderRandomPickCard(resultEl, final, true);
+      if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມໃໝ່'; }
+    }
+  }, 90);
+}
+function _renderRandomPickCard(container, m, settled){
+  if(!container) return;
+  const [ibg,ifg] = CARD_COLORS[m.id%CARD_COLORS.length];
+  const imgHtml = m.img
+    ? `<img src="${m.img}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`
+    : `<div style="width:100%;height:100%;background:${ibg};border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:${ifg}">${m.name.slice(0,2)}</div>`;
+  const hasVariants = m.variants && m.variants.length > 0;
+  container.innerHTML = `<div style="text-align:center;margin-bottom:14px;${settled?'animation:popIn .3s ease':''}">
+    <div style="width:120px;height:120px;margin:0 auto 10px;box-shadow:0 6px 18px rgba(0,0,0,.18)">${imgHtml}</div>
+    <div style="font-size:17px;font-weight:900;color:#1C1917">${m.name}</div>
+    <div style="font-size:14px;font-weight:800;color:#FF7A59;margin-top:2px">${hasVariants?'ຫຼາຍລາຄາ':fmt(m.price)}</div>
+    ${settled?`<button onclick="_randomPickSelect(${m.id})" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.35)">🛒 ເລືອກລາຍການນີ້</button>`:''}
+  </div>`;
+}
+function _randomPickSelect(menuId){
+  const m = MENU.find(x=>x.id===menuId);
+  if(!m) return;
+  closeModal('modal-randompick');
+  if(m.variants && m.variants.length>0) custOpenVarPopup(menuId);
+  else custConfirmItem(menuId);
 }
 
 function togglePassVis(){
@@ -10201,7 +10378,7 @@ function _mgConfirm(){
   }
   document.getElementById('_merge_overlay')?.remove();
   renderTables();
-  if(fbDB){ fbSaveOneTable(toId); fbSaveOneTable(fromId); }
+  if(fbDB){ fbSaveTables(); }  // atomic whole-array write — avoids race where source table's clear gets overwritten by a stale read between two partial writes
   toast('✅ ລວມ '+from.name+' → '+to.name+' ສຳເລັດ');
 }
 
@@ -10299,7 +10476,7 @@ function _mvConfirm(){
   }
   document.getElementById('_move_overlay')?.remove();
   renderTables();
-  if(fbDB){ fbSaveOneTable(toId); fbSaveOneTable(fromId); }
+  if(fbDB){ fbSaveTables(); }  // atomic whole-array write — avoids race where source table's clear gets overwritten by a stale read between two partial writes
   toast('✅ ຍ້າຍ '+from.name+' → '+to.name+' ສຳເລັດ');
 }
 function updateMovePreview(){
@@ -10354,7 +10531,7 @@ function confirmMoveTable(){
   }
 
   renderTables();
-  if(fbDB){ fbSaveOneTable(toId); fbSaveOneTable(fromId); }
+  if(fbDB){ fbSaveTables(); }  // atomic whole-array write — avoids race where source table's clear gets overwritten by a stale read between two partial writes
   closeModal('modal-move-table');
   toast('✅ ຍ້າຍ ' + from.name + ' → ' + to.name + ' ສຳເລັດ');
 }
@@ -10530,7 +10707,8 @@ function fbSaveTables(){
   const tableData = TABLES.map(t=>({
     id:t.id, name:t.name, seats:t.seats,
     status:t.status||'free', amount:t.amount||0,
-    orders:t.orders||[], custPending:t.custPending||[]
+    orders:t.orders||[], custPending:t.custPending||[],
+    hasNewOrder:t.hasNewOrder||false
   }));
   fbDB.ref(BRANCH_PATH+'tables').set(tableData).catch(e=>console.warn('fbSaveTables:',e));
   // Also save counters
@@ -10542,15 +10720,15 @@ function fbSaveTables(){
 // ── Save ONE table by ID (per-table write to avoid overwriting other devices) ──
 function fbSaveOneTable(tableId){
   if(!fbDB) return;
-  const idx = TABLES.findIndex(t=>t.id===tableId);
-  if(idx<0) return;
-  const t = TABLES[idx];
-  fbDB.ref(BRANCH_PATH+'tables/'+idx).set({
-    id:t.id, name:t.name, seats:t.seats,
-    status:t.status||'free', amount:t.amount||0,
-    orders:t.orders||[], custPending:t.custPending||[],
-    hasNewOrder:t.hasNewOrder||false
-  }).catch(e=>console.warn('fbSaveOneTable:',e));
+  // NOTE: this used to write to tables/<localArrayIndex> (a single partial path).
+  // That was unsafe: the local TABLES array order can drift from the order Firebase
+  // has stored (e.g. after tables are added/removed on another device), so the write
+  // could land on the WRONG slot — leaving this table's real Firebase record stale
+  // ("busy" with old items/amount). fbListenTables() then reads that stale record back
+  // (matched by id, not index) and reverts the table to "occupied" even after the
+  // order was cleared/cancelled locally. Always saving the whole array atomically
+  // (keyed correctly by id on read) avoids this class of desync entirely.
+  fbSaveTables();
 }
 function fbSaveBill(bill){
   if(!fbDB) return;
@@ -10611,10 +10789,10 @@ function fbListenOrders(){
     const ord=snap.val(); if(!ord||ord.status!=='pending') return;
     fbHandleNewOrder(ord);
   });
-  // "ເອີ້ນພະນັກງານ" (call-staff) requests from the customer QR page
+  // "ເອີ້ນພະນັກງານ" (call-staff) and "ຮ້ອງເຊັກບິນ" (checkout) requests from the customer QR page
   fbDB.ref(BRANCH_PATH+'staff_calls').on('child_added', snap=>{
     const d = snap.val(); if(!d) return;
-    showStaffAlert('call', d.tableName||'', '', snap.key);
+    showStaffAlert(d.kind==='checkout' ? 'checkout' : 'call', d.tableName||'', '', snap.key);
   });
 }
 
@@ -10724,8 +10902,10 @@ function fbListenMenu(){
     if(S.user){
       if(typeof renderMenuMgmt==='function' && document.getElementById('menu-mgmt-grid')) renderMenuMgmt();
       if(typeof renderPOSGrid==='function') renderPOSGrid();
-      if(typeof renderCustMenu==='function' && document.getElementById('cust-menu')) renderCustMenu();
     }
+    // Customer QR page: refresh menu live even when nobody is logged in (S.user is unset for customers)
+    const _custPage = document.getElementById('page-customer');
+    if(_custPage && _custPage.style.display==='block' && typeof renderCustMenu==='function') renderCustMenu();
   });
 }
 
@@ -10739,6 +10919,9 @@ function fbListenCategories(){
       if(typeof renderCatTabs==='function') renderCatTabs();
       if(typeof renderMenuMgmt==='function' && document.getElementById('menu-mgmt-grid')) renderMenuMgmt();
     }
+    // Customer QR page: refresh category tabs live even when nobody is logged in (S.user is unset for customers)
+    const _custPage2 = document.getElementById('page-customer');
+    if(_custPage2 && _custPage2.style.display==='block' && typeof renderCustCatTabs==='function') renderCustCatTabs();
   });
 }
 
@@ -11096,9 +11279,17 @@ function appInit(){
     _hideLoading(); // Remove loading screen for customer page
 
     function _tryEnterCustomer(attempt){
-      if(TABLES.length > 0){ enterCustomer(); return; }
+      // Wait for tables AND categories AND menu to all sync from Firebase before first
+      // render, so the customer never sees an empty category bar on a fresh QR scan.
+      // (Previously this used CATEGORIES.length>0 OR MENU.length>0 — since menu items
+      // often sync in before categories do, that OR let the page render with items
+      // already visible but categories still empty, which is exactly the "everything
+      // mixed together, no tabs" symptom.)
+      if(TABLES.length > 0 && CATEGORIES.length > 0 && MENU.length > 0){ enterCustomer(); return; }
       if(attempt < 15) setTimeout(()=>_tryEnterCustomer(attempt+1), 400);
-      else enterCustomer(); // fallback after 6s
+      else enterCustomer(); // fallback after 6s — renders with whatever synced so far;
+                            // the live fbListenCategories()/fbListenMenu() refresh below
+                            // will still catch up and re-render once the rest arrives.
     }
     // Give Firebase time to init before trying
     setTimeout(()=>_tryEnterCustomer(0), 800);
