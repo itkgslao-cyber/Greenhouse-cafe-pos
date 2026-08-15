@@ -82,6 +82,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideR{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+@keyframes slotShake{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{left:-100%}100%{left:200%}}
 
@@ -2227,9 +2228,9 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             🛒
             <span id="cust-cart-notif" style="position:absolute;top:-3px;right:-3px;background:#FFF;color:#1F6B45;font-size:9px;font-weight:900;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
           </button>
-          <button class="cust-icn-btn" id="cust-bill-btn" onclick="showCustBill()" title="ບິນຂອງຂ້ອຍ">🧾</button>
-          <button class="cust-icn-btn" id="cust-random-btn" onclick="openRandomPicker()" title="ສຸ່ມເມນູ">🎲</button>
-          <button class="cust-callstaff-btn" id="cust-callstaff-btn" onclick="custCallStaff()" title="ເອີ້ນພະນັກງານ">🙋 ເອີ້ນພະນັກງານ</button>
+          <button class="cust-icn-btn" id="cust-bill-btn" onclick="showCustBill()" title="ບິນຂອງຂ້ອຍ / My Bill">🧾</button>
+          <button class="cust-icn-btn" id="cust-random-btn" onclick="openRandomPicker()" title="ສຸ່ມເມນູ / Random Pick">🎲</button>
+          <button class="cust-callstaff-btn" id="cust-callstaff-btn" onclick="custCallStaff()" title="ເອີ້ນພະນັກງານ / Call Staff">🙋 ເອີ້ນພະນັກງານ / Call</button>
         </div>
       </div>
       <div class="cust-cats" id="cust-cats"></div>
@@ -2240,10 +2241,10 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
   <div onclick="openRandomPicker()" style="margin:14px 16px 0;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#FFB088,#FF7A59);display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 14px rgba(255,122,89,.3);-webkit-tap-highlight-color:transparent">
     <div style="font-size:28px">🎲</div>
     <div style="flex:1">
-      <div style="font-size:13px;font-weight:800;color:#fff">ບໍ່ຮູ້ຈະກິນຫຍັງ?</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.9);margin-top:1px">ໃຫ້ພວກເຮົາສຸ່ມເມນູໃຫ້ທ່ານເລີຍ!</div>
+      <div style="font-size:13px;font-weight:800;color:#fff">ບໍ່ຮູ້ຈະກິນຫຍັງ? / Can't decide?</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.9);margin-top:1px">ໃຫ້ພວກເຮົາສຸ່ມເມນູໃຫ້ທ່ານເລີຍ! / Let us pick for you!</div>
     </div>
-    <div style="font-size:13px;font-weight:800;color:#fff">ສຸ່ມ ›</div>
+    <div style="font-size:13px;font-weight:800;color:#fff">ສຸ່ມ / Try ›</div>
   </div>
 
   <!-- Menu content -->
@@ -2252,7 +2253,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
   <!-- Floating cart button -->
   <div class="cart-bar hidden" id="cart-bar" onclick="showCustCart()">
     <span class="cart-count" id="cart-qty">0</span>
-    <span class="cart-lbl">ເບິ່ງລາຍການ Order</span>
+    <span class="cart-lbl">ເບິ່ງລາຍການ Order / View Order</span>
     <span class="cart-tot" id="cart-tot">₭0</span>
   </div>
 </div>
@@ -2988,19 +2989,20 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 ================================================================ -->
 <div class="modal-bd hidden" id="modal-cart" style="align-items:flex-end;padding:0">
   <div style="background:#fff;color:#1C1917;border-radius:22px 22px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;max-height:85vh;overflow-y:auto;animation:fadeUp .3s ease">
-    <div style="font-size:17px;font-weight:800;margin-bottom:16px;color:#1C1917">🛒 ລາຍການ Order</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:2px;color:#1C1917">🛒 ລາຍການ Order</div>
+    <div style="font-size:11px;font-weight:600;color:#9CA3AF;margin-bottom:16px">Your Order</div>
     <div id="cust-cart-list"></div>
     <div class="divider light"></div>
     <div id="cust-cart-sum"></div>
     <!-- Remark field -->
     <div style="margin:12px 0">
-      <label style="font-size:12px;font-weight:700;color:#6B7280;display:block;margin-bottom:6px">📝 ໝາຍເຫດ / ຂໍພິເສດ (ຖ້າມີ)</label>
-      <textarea id="cust-remark" rows="2" placeholder="ເຊັ່ນ: ເຜັດຫຼາຍ, ບໍ່ໃສ່ນ້ຳຕານ, ບໍ່ໃສ່ຜັກ..." style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #E5E7EB;font-size:13px;font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;color:#1C1917;resize:none;outline:none;box-sizing:border-box;transition:border .2s" onfocus="this.style.borderColor='#2E8B57'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+      <label style="font-size:12px;font-weight:700;color:#6B7280;display:block;margin-bottom:6px">📝 ໝາຍເຫດ / ຂໍພິເສດ (ຖ້າມີ) — Notes / Special request</label>
+      <textarea id="cust-remark" rows="2" placeholder="ເຊັ່ນ: ເຜັດຫຼາຍ, ບໍ່ໃສ່ນ້ຳຕານ... / e.g. extra spicy, no sugar..." style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #E5E7EB;font-size:13px;font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;color:#1C1917;resize:none;outline:none;box-sizing:border-box;transition:border .2s" onfocus="this.style.borderColor='#2E8B57'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
     </div>
-    <div style="font-size:11px;color:#9CA3AF;margin:4px 0 10px;text-align:center">⚠️ ພະນັກງານຈະຈົດ Order ແລ້ວ ຮຽກ Order ຕໍ່ຫ້ອງຄົວ</div>
+    <div style="font-size:11px;color:#9CA3AF;margin:4px 0 10px;text-align:center">⚠️ ພະນັກງານຈະຈົດ Order ແລ້ວ ຮຽກ Order ຕໍ່ຫ້ອງຄົວ<br>Staff will note your order and send it to the kitchen</div>
     <div style="display:flex;gap:10px">
-      <button onclick="closeModal('modal-cart')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ແກ້ໄຂ</button>
-      <button onclick="custConfirmOrder()" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#DC2626);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">✅ ຢືນຢັນ Order</button>
+      <button onclick="closeModal('modal-cart')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ແກ້ໄຂ / Edit</button>
+      <button onclick="custConfirmOrder()" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#DC2626);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">✅ ຢືນຢັນ Order / Confirm</button>
     </div>
   </div>
 </div>
@@ -3010,15 +3012,16 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 ================================================================ -->
 <div class="modal-bd hidden" id="modal-custbill" style="align-items:flex-end;padding:0">
   <div style="background:#fff;color:#1C1917;border-radius:22px 22px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;max-height:85vh;overflow-y:auto;animation:fadeUp .3s ease">
-    <div style="font-size:17px;font-weight:800;margin-bottom:4px;color:#1C1917">🧾 ບິນຂອງທ່ານ</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:2px;color:#1C1917">🧾 ບິນຂອງທ່ານ</div>
+    <div style="font-size:11px;font-weight:600;color:#9CA3AF;margin-bottom:2px">Your Bill</div>
     <div style="font-size:12px;color:#9CA3AF;margin-bottom:16px" id="custbill-tbl-lbl">ໂຕະ —</div>
     <div id="custbill-list"></div>
     <div class="divider light"></div>
     <div id="custbill-sum"></div>
-    <div style="font-size:11px;color:#9CA3AF;margin:12px 0 10px;text-align:center">⚠️ ຍອດນີ້ອາດປ່ຽນແປງໄດ້ ຫາກມີການສັ່ງເພີ່ມ — ຍອດຈິງໃຫ້ອີງໃສ່ໃບບິນຈາກພະນັກງານ</div>
+    <div style="font-size:11px;color:#9CA3AF;margin:12px 0 10px;text-align:center">⚠️ ຍອດນີ້ອາດປ່ຽນແປງໄດ້ ຫາກມີການສັ່ງເພີ່ມ — ຍອດຈິງໃຫ້ອີງໃສ່ໃບບິນຈາກພະນັກງານ<br>Amount may change with more orders — final bill from staff is official</div>
     <div style="display:flex;gap:10px">
-      <button onclick="closeModal('modal-custbill')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ປິດ</button>
-      <button onclick="custRequestCheckout()" id="custbill-checkout-btn" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#143F29);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">🧾 ຮ້ອງເຊັກບິນ / ຄິດເງິນ</button>
+      <button onclick="closeModal('modal-custbill')" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;color:#374151">ປິດ / Close</button>
+      <button onclick="custRequestCheckout()" id="custbill-checkout-btn" style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E8B57,#143F29);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.4)">🧾 ຮ້ອງເຊັກບິນ / Request Bill</button>
     </div>
   </div>
 </div>
@@ -3028,12 +3031,13 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 ================================================================ -->
 <div class="modal-bd hidden" id="modal-randompick" style="align-items:flex-end;padding:0">
   <div style="background:#fff;color:#1C1917;border-radius:22px 22px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;max-height:85vh;overflow-y:auto;animation:fadeUp .3s ease">
-    <div style="font-size:17px;font-weight:800;margin-bottom:4px;color:#1C1917">🎲 ສຸ່ມເມນູ</div>
-    <div style="font-size:12px;color:#9CA3AF;margin-bottom:14px">ບໍ່ຮູ້ຈະສັ່ງຫຍັງ? ເລືອກໝວດແລ້ວກົດສຸ່ມ — ຈະຕິກໝວດດຽວ ຫຼື ຫຼາຍໝວດກໍ່ໄດ້</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:2px;color:#1C1917">🎲 ສຸ່ມເມນູ</div>
+    <div style="font-size:11px;font-weight:600;color:#9CA3AF;margin-bottom:2px">Random Menu Picker</div>
+    <div style="font-size:12px;color:#9CA3AF;margin-bottom:14px">ບໍ່ຮູ້ຈະສັ່ງຫຍັງ? ເລືອກໝວດແລ້ວກົດສຸ່ມ — ຈະຕິກໝວດດຽວ ຫຼື ຫຼາຍໝວດກໍ່ໄດ້<br>Can't decide? Pick categories and hit spin — one or many at a time</div>
     <div id="randompick-cats" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
     <div id="randompick-result"></div>
     <button id="randompick-spin-btn" onclick="custDoRandomPick()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#FFB088,#FF7A59);color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(255,122,89,.4);margin-top:4px">🎲 ສຸ່ມເລີຍ!</button>
-    <button onclick="closeModal('modal-randompick')" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;margin-top:8px">ປິດ</button>
+    <button onclick="closeModal('modal-randompick')" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;margin-top:8px">ປິດ / Close</button>
   </div>
 </div>
 
@@ -7510,7 +7514,7 @@ function renderCustCatTabs(){
       ? `<img src="${catObj.img}" style="width:16px;height:16px;border-radius:3px;object-fit:cover;">`
       : '';
     const isActive = c===custCat;
-    return `<button class="cust-cat-btn ${isActive?'active':''}" onclick="setCustCat('${c}',this)">${thumb} ${c}</button>`;
+    return `<button class="cust-cat-btn ${isActive?'active':''}" onclick="setCustCat('${c}',this)">${thumb} ${i===0?'ທັງໝົດ / All':c}</button>`;
   }).join('');
 }
 function setCustCat(c,el){
@@ -7545,13 +7549,13 @@ function renderCustMenu(){
     if(stillLoading){
       const elapsed = Date.now() - (S.custPageOpenedAt || Date.now());
       if(elapsed > 15000){
-        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">📵</div><div style="font-size:15px;font-weight:600">ບໍ່ສາມາດໂຫລດເມນູໄດ້</div><div style="font-size:12px;margin-top:6px;margin-bottom:16px">ກວດສອບອິນເຕີເນັດ ແລ້ວກົດລອງໃໝ່</div><button onclick="location.reload()" style="padding:10px 24px;border-radius:12px;border:none;background:#1F6B45;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔄 ລອງໃໝ່</button></div>`;
+        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">📵</div><div style="font-size:15px;font-weight:600">ບໍ່ສາມາດໂຫລດເມນູໄດ້ / Couldn't load menu</div><div style="font-size:12px;margin-top:6px;margin-bottom:16px">ກວດສອບອິນເຕີເນັດ ແລ້ວກົດລອງໃໝ່ / Check your internet and try again</div><button onclick="location.reload()" style="padding:10px 24px;border-radius:12px;border:none;background:#1F6B45;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔄 ລອງໃໝ່ / Retry</button></div>`;
       } else {
-        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:40px;margin-bottom:12px;display:inline-block;animation:spinSync 1s linear infinite">🔄</div><div style="font-size:15px;font-weight:600">ກຳລັງໂຫລດເມນູ...</div></div>`;
+        document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:40px;margin-bottom:12px;display:inline-block;animation:spinSync 1s linear infinite">🔄</div><div style="font-size:15px;font-weight:600">ກຳລັງໂຫລດເມນູ... / Loading menu...</div></div>`;
       }
       return;
     }
-    document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">🍽️</div><div style="font-size:15px;font-weight:600">ໝວດນີ້ຍັງບໍ່ມີເມນູ</div></div>`;
+    document.getElementById('cust-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#9CA3AF"><div style="font-size:48px;margin-bottom:12px">🍽️</div><div style="font-size:15px;font-weight:600">ໝວດນີ້ຍັງບໍ່ມີເມນູ / No items in this category</div></div>`;
     return;
   }
   const cards = items.map(m => {
@@ -7603,7 +7607,7 @@ function custOpenVarPopup(menuId){
         <button onclick="event.stopPropagation();custVarPopupQty('${vkey}',${m.id},'${v.id}',-1)" style="width:28px;height:28px;border-radius:50%;background:#F3F4F6;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#6B7280">−</button>
         <span style="font-size:15px;font-weight:800;min-width:20px;text-align:center;color:#1A1A1A">${qty}</span>
         <button onclick="event.stopPropagation();custVarPopupQty('${vkey}',${m.id},'${v.id}',1)" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3FAE7A,#1F6B45);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#fff">+</button>
-      </div>`:`<div style="font-size:11px;text-align:center;color:#9CA3AF;margin-top:6px">${disabled?'ໝົດ':'ກົດເພື່ອເລືອກ'}</div>`}
+      </div>`:`<div style="font-size:11px;text-align:center;color:#9CA3AF;margin-top:6px">${disabled?'ໝົດ / Sold out':'ກົດເພື່ອເລືອກ / Tap to select'}</div>`}
     </div>`;
   }).join('');
 
@@ -7625,8 +7629,8 @@ function custOpenVarPopup(menuId){
     <!-- Variant grid -->
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px" id="cust-var-grid">${varCards}</div>
     <div style="display:flex;gap:8px;margin-top:16px">
-      <button onclick="custCloseVarPopup()" style="flex:1;padding:14px;border-radius:16px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif">ຍົກເລີກ</button>
-      <button id="_var_confirm_btn" onclick="_varConfirm(${m.id})" style="flex:2;padding:14px;border-radius:16px;border:none;background:#CBD5E1;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;pointer-events:none;opacity:.4">ເລືອກກ່ອນ</button>
+      <button onclick="custCloseVarPopup()" style="flex:1;padding:14px;border-radius:16px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans Lao',sans-serif">ຍົກເລີກ / Cancel</button>
+      <button id="_var_confirm_btn" onclick="_varConfirm(${m.id})" style="flex:2;padding:14px;border-radius:16px;border:none;background:#CBD5E1;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;pointer-events:none;opacity:.4">ເລືອກກ່ອນ / Select first</button>
     </div>
   </div>`;
   pop.onclick=e=>{ if(e.target===pop) custCloseVarPopup(); };
@@ -7636,8 +7640,8 @@ function _varUpdateBtn(menuId){
   const m=MENU.find(x=>x.id===menuId);if(!m)return;
   const n=m.variants.reduce((a,v)=>a+(S.custCart[m.id+'_'+v.id]?.qty||0),0);
   const btn=document.getElementById('_var_confirm_btn');if(!btn)return;
-  if(n>0){btn.style.background='linear-gradient(135deg,#3FAE7A,#1F6B45)';btn.style.opacity='1';btn.style.pointerEvents='auto';btn.textContent='✅ ເພີ່ມໃສ່ Order ('+n+' ລາຍ)';}
-  else{btn.style.background='#CBD5E1';btn.style.opacity='.4';btn.style.pointerEvents='none';btn.textContent='ເລືອກກ່ອນ';}
+  if(n>0){btn.style.background='linear-gradient(135deg,#3FAE7A,#1F6B45)';btn.style.opacity='1';btn.style.pointerEvents='auto';btn.textContent='✅ ເພີ່ມໃສ່ Order ('+n+' ລາຍ) / Add '+n+' item'+(n>1?'s':'');}
+  else{btn.style.background='#CBD5E1';btn.style.opacity='.4';btn.style.pointerEvents='none';btn.textContent='ເລືອກກ່ອນ / Select first';}
 }
 function _varConfirm(menuId){custCloseVarPopup();updateCustCartBadge();updateCartBar();renderCustMenu();}
 
@@ -7664,7 +7668,7 @@ function custVarPopupQty(vkey, menuId, varId, delta){
         <button onclick="event.stopPropagation();custVarPopupQty('${vk}',${m.id},'${v.id}',-1)" style="width:28px;height:28px;border-radius:50%;background:#F3F4F6;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#6B7280">−</button>
         <span style="font-size:15px;font-weight:800;min-width:20px;text-align:center;color:#1A1A1A">${qty}</span>
         <button onclick="event.stopPropagation();custVarPopupQty('${vk}',${m.id},'${v.id}',1)" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3FAE7A,#1F6B45);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#fff">+</button>
-      </div>`:`<div style="font-size:11px;text-align:center;color:#9CA3AF;margin-top:6px">${dis?'ໝົດ':'ກົດເພື່ອເລືອກ'}</div>`}
+      </div>`:`<div style="font-size:11px;text-align:center;color:#9CA3AF;margin-top:6px">${dis?'ໝົດ / Sold out':'ກົດເພື່ອເລືອກ / Tap to select'}</div>`}
     </div>`;
   }).join('');
   _varUpdateBtn(menuId);
@@ -7709,15 +7713,15 @@ function custConfirmItem(menuId){
       ${m.desc?`<div style="font-size:13px;color:#9CA3AF;margin-bottom:6px">${m.desc}</div>`:''}
       <div style="font-size:22px;font-weight:900;color:#1F6B45;margin-bottom:16px">${fmt(m.price)}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:#F9FAFB;border-radius:16px;padding:10px 16px;margin-bottom:16px">
-        <span style="font-size:14px;font-weight:700;color:#374151">ຈຳນວນ</span>
+        <span style="font-size:14px;font-weight:700;color:#374151">ຈຳນວນ / Qty</span>
         <div style="display:flex;align-items:center;gap:16px">
           <button id="_cc_minus" onclick="_ccQtyChange(-1)" style="width:40px;height:40px;border-radius:50%;background:#E5E7EB;border:none;font-size:20px;cursor:pointer;color:#374151;font-family:inherit">&#x2212;</button>
           <span id="_cc_qty" style="font-size:24px;font-weight:900;color:#111;min-width:32px;text-align:center">${existQty>0?existQty:1}</span>
           <button onclick="_ccQtyChange(1)" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3FAE7A,#1F6B45);border:none;font-size:20px;cursor:pointer;color:#fff;font-family:inherit">+</button>
         </div>
       </div>
-      <button onclick="_ccConfirm(${m.id})" style="width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 16px rgba(31,107,69,.4)">ເພີ່ມໃສ່ Order</button>
-      <button onclick="document.getElementById('_cust_confirm_pop').remove()" style="width:100%;padding:12px;border-radius:16px;border:none;background:transparent;color:#9CA3AF;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;margin-top:6px">ຍົກເລີກ</button>
+      <button onclick="_ccConfirm(${m.id})" style="width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:17px;font-weight:900;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 16px rgba(31,107,69,.4)">ເພີ່ມໃສ່ Order / Add to Order</button>
+      <button onclick="document.getElementById('_cust_confirm_pop').remove()" style="width:100%;padding:12px;border-radius:16px;border:none;background:transparent;color:#9CA3AF;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;margin-top:6px">ຍົກເລີກ / Cancel</button>
     </div>
   </div>`;
   pop._menuId=menuId; pop._qty=existQty>0?existQty:1;
@@ -7762,7 +7766,7 @@ function updateCartBar(){
 
 function showCustCart(){
   const items=Object.values(S.custCart);
-  if(!items.length){toast('ຕະກ້າ ຫວ່າງ','info');return;}
+  if(!items.length){toast('ຕະກ້າ ຫວ່າງ / Cart is empty','info');return;}
   renderCartModal();
   openModal('modal-cart');
 }
@@ -7789,9 +7793,9 @@ function renderCartModal(){
     </div>`;
   }).join('');
   document.getElementById('cust-cart-sum').innerHTML=`
-    <div style="display:flex;justify-content:space-between;font-size:13px;color:#78716C;padding:5px 0"><span>ລວມ</span><span>${fmt(sub)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:#78716C;padding:5px 0"><span>ລວມ / Subtotal</span><span>${fmt(sub)}</span></div>
     ${vat>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#78716C;padding:5px 0"><span>${vatLabel()}</span><span>${fmt(vat)}</span></div>`:''}
-    <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:900;color:#2E8B57;margin-top:8px;padding-top:10px;border-top:2px solid #F5F5F4"><span>ທັງໝົດ</span><span>${fmt(sub+vat)}</span></div>`;
+    <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:900;color:#2E8B57;margin-top:8px;padding-top:10px;border-top:2px solid #F5F5F4"><span>ທັງໝົດ / Total</span><span>${fmt(sub+vat)}</span></div>`;
 }
 function cartItemQty(key,delta){
   if(!S.custCart[key])return;
@@ -9644,13 +9648,14 @@ function custConfirmOrder(){
   successDiv.style.cssText = 'position:fixed;inset:0;background:rgba(31,107,69,.96);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Noto Sans Lao","IBM Plex Sans Thai",sans-serif;padding:32px 24px;text-align:center;opacity:0;transition:opacity .25s ease';
   successDiv.innerHTML = `
     <div style="font-size:80px;margin-bottom:16px">✅</div>
-    <div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:10px">ສ່ງ Order ແລ້ວ!</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:2px">ສ່ງ Order ແລ້ວ!</div>
+    <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:10px">Order Sent!</div>
     <div style="font-size:15px;color:rgba(255,255,255,.9);line-height:1.8;margin-bottom:28px">
-      ພະນັກງານໄດ້ຮັບ Order ຂອງທ່ານ<br>ສາມາດສັ່ງເພີ່ມໄດ້ເລີຍ 🙏
+      ພະນັກງານໄດ້ຮັບ Order ຂອງທ່ານ ສາມາດສັ່ງເພີ່ມໄດ້ເລີຍ 🙏<br><span style="font-size:12px;opacity:.85">Staff received your order — feel free to order more</span>
       ${remark ? '<br><span style="font-size:13px;opacity:.8">📝 '+remark+'</span>' : ''}
     </div>
     <button onclick="_closeOrderSuccess()" style="width:100%;max-width:280px;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">
-      ສັ່ງອາຫານຕໍ່
+      ສັ່ງອາຫານຕໍ່ / Order More
     </button>
   `;
   document.body.appendChild(successDiv);
@@ -9790,7 +9795,7 @@ function custCallStaff(){
     const ref = fbDB.ref(BRANCH_PATH+'staff_calls').push();
     ref.set({ tableId: S.custTable, tableName, time: Date.now() }).catch(()=>{});
   }
-  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ລໍຖ້າບຶດນຶ່ງເດີ້');
+  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ລໍຖ້າບຶດນຶ່ງເດີ້ / Staff notified, please wait');
 }
 
 // ── Customer QR page: "ບິນຂອງທ່ານ" — running total of everything ordered so far ──
@@ -9826,7 +9831,7 @@ function showCustBill(){
         </div>
         <div style="font-size:13px;font-weight:800;color:#1C1917">${fmt(i.price*netQty)}</div>
       </div>`;
-    }).join('') : `<div style="text-align:center;padding:28px 16px;color:#9CA3AF;font-size:13px">ຍັງບໍ່ໄດ້ສັ່ງລາຍການໃດ</div>`;
+    }).join('') : `<div style="text-align:center;padding:28px 16px;color:#9CA3AF;font-size:13px">ຍັງບໍ່ໄດ້ສັ່ງລາຍການໃດ<br>No items ordered yet</div>`;
   }
 
   const sub = items.reduce((a,i)=>a+i.price*Math.max(0,i.qty-i.free), 0);
@@ -9834,9 +9839,9 @@ function showCustBill(){
   const sumEl = document.getElementById('custbill-sum');
   if(sumEl){
     sumEl.innerHTML = `
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:4px"><span>ລວມ</span><span>${fmt(sub)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:4px"><span>ລວມ / Subtotal</span><span>${fmt(sub)}</span></div>
       ${vat>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:4px"><span>${vatLabel()}</span><span>${fmt(vat)}</span></div>`:''}
-      <div style="display:flex;justify-content:space-between;font-size:19px;font-weight:900;padding-top:9px;border-top:1.5px solid #E5E7EB;margin-top:7px;color:#1C1917"><span>ທັງໝົດ</span><span style="color:#1F6B45">${fmt(sub+vat)}</span></div>`;
+      <div style="display:flex;justify-content:space-between;font-size:19px;font-weight:900;padding-top:9px;border-top:1.5px solid #E5E7EB;margin-top:7px;color:#1C1917"><span>ທັງໝົດ / Total</span><span style="color:#1F6B45">${fmt(sub+vat)}</span></div>`;
   }
 
   const ckBtn = document.getElementById('custbill-checkout-btn');
@@ -9860,7 +9865,7 @@ function custRequestCheckout(){
     const ref = fbDB.ref(BRANCH_PATH+'staff_calls').push();
     ref.set({ tableId: S.custTable, tableName, time: Date.now(), kind:'checkout' }).catch(()=>{});
   }
-  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ພະນັກງານກຳລັງມາເກັບເງິນ');
+  toast('ແຈ້ງພະນັກງານແລ້ວ ✅ ພະນັກງານກຳລັງມາເກັບເງິນ / Staff notified, coming to collect payment');
   closeModal('modal-custbill');
 }
 
@@ -9880,14 +9885,14 @@ function openRandomPicker(){
   const resultEl = document.getElementById('randompick-result');
   if(resultEl) resultEl.innerHTML = '';
   const spinBtn = document.getElementById('randompick-spin-btn');
-  if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມເລີຍ!'; }
+  if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມເລີຍ! / Spin!'; }
   openModal('modal-randompick');
 }
 function custDoRandomPick(){
   const checked = Array.from(document.querySelectorAll('.randompick-cat-chk:checked')).map(el=>el.value);
-  if(!checked.length){ toast('ຕິກຢ່າງໜ້ອຍ 1 ໝວດກ່ອນ','error'); return; }
+  if(!checked.length){ toast('ຕິກຢ່າງໜ້ອຍ 1 ໝວດກ່ອນ / Select at least 1 category','error'); return; }
   const pool = MENU.filter(m => m.avail && checked.includes(m.cat));
-  if(!pool.length){ toast('ໝວດທີ່ເລືອກຍັງບໍ່ມີເມນູທີ່ພ້ອມຂາຍ','error'); return; }
+  if(!pool.length){ toast('ໝວດທີ່ເລືອກຍັງບໍ່ມີເມນູທີ່ພ້ອມຂາຍ / No available items in selected categories','error'); return; }
 
   const spinBtn = document.getElementById('randompick-spin-btn');
   if(spinBtn){ spinBtn.disabled = true; spinBtn.style.opacity = '.6'; }
@@ -9895,19 +9900,57 @@ function custDoRandomPick(){
   const resultEl = document.getElementById('randompick-result');
   const final = pool[Math.floor(Math.random()*pool.length)];
 
-  // Fun "slot machine" shuffle reveal before landing on the final pick
+  // Real slot-machine feel: quick ticks at the start that gradually slow down
+  // (ease-out) for suspense, a soft tick sound on every flip, and a little
+  // fanfare + bounce when it finally lands — so it feels like a fun surprise
+  // instead of an instant, flat result.
+  const totalSteps = 18;
   let step = 0;
-  const totalSteps = 10;
-  const shuffleTimer = setInterval(()=>{
+  function nextStep(){
     step++;
-    const m = pool[Math.floor(Math.random()*pool.length)];
-    _renderRandomPickCard(resultEl, m, false);
-    if(step >= totalSteps){
-      clearInterval(shuffleTimer);
-      _renderRandomPickCard(resultEl, final, true);
-      if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມໃໝ່'; }
+    const settled = step >= totalSteps;
+    const m = settled ? final : pool[Math.floor(Math.random()*pool.length)];
+    _renderRandomPickCard(resultEl, m, settled);
+    if(settled){
+      _playSlotWin();
+      if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມໃໝ່ / Spin Again'; }
+      return;
     }
-  }, 90);
+    _playSlotTick();
+    // Ease-out curve: starts around 55ms/flip, stretches out to ~260ms near the end
+    const progress = step/totalSteps;
+    const delay = 55 + Math.round(210*progress*progress);
+    setTimeout(nextStep, delay);
+  }
+  nextStep();
+}
+// Soft "tick" heard on every shuffle flip during the random pick spin
+function _playSlotTick(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='square'; o.frequency.value=560;
+    g.gain.setValueAtTime(0.10, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.06);
+    o.start(); o.stop(ctx.currentTime+0.07);
+  }catch(e){}
+}
+// Little ascending fanfare played when the random pick lands on its final item
+function _playSlotWin(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [523.25,659.25,783.99,1046.50].forEach((freq,i)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type='sine'; o.frequency.value=freq;
+      const t = ctx.currentTime + i*0.09;
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.28);
+      o.start(t); o.stop(t+0.3);
+    });
+  }catch(e){}
 }
 function _renderRandomPickCard(container, m, settled){
   if(!container) return;
@@ -9916,11 +9959,11 @@ function _renderRandomPickCard(container, m, settled){
     ? `<img src="${m.img}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`
     : `<div style="width:100%;height:100%;background:${ibg};border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:${ifg}">${m.name.slice(0,2)}</div>`;
   const hasVariants = m.variants && m.variants.length > 0;
-  container.innerHTML = `<div style="text-align:center;margin-bottom:14px;${settled?'animation:popIn .3s ease':''}">
-    <div style="width:120px;height:120px;margin:0 auto 10px;box-shadow:0 6px 18px rgba(0,0,0,.18)">${imgHtml}</div>
-    <div style="font-size:17px;font-weight:900;color:#1C1917">${m.name}</div>
-    <div style="font-size:14px;font-weight:800;color:#FF7A59;margin-top:2px">${hasVariants?'ຫຼາຍລາຄາ':fmt(m.price)}</div>
-    ${settled?`<button onclick="_randomPickSelect(${m.id})" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.35)">🛒 ເລືອກລາຍການນີ້</button>`:''}
+  container.innerHTML = `<div style="text-align:center;margin-bottom:14px;${settled?'animation:popIn .35s cubic-bezier(.34,1.56,.64,1)':'animation:slotShake .1s ease'}">
+    <div style="width:120px;height:120px;margin:0 auto 10px;box-shadow:0 6px 18px rgba(0,0,0,.18);${settled?'':'filter:blur(.5px);opacity:.85'}">${imgHtml}</div>
+    <div style="font-size:17px;font-weight:900;color:#1C1917">${m.name}${settled?' 🎉':''}</div>
+    <div style="font-size:14px;font-weight:800;color:#FF7A59;margin-top:2px">${hasVariants?'ຫຼາຍລາຄາ / Multiple prices':fmt(m.price)}</div>
+    ${settled?`<button onclick="_randomPickSelect(${m.id})" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.35)">🛒 ເລືອກລາຍການນີ້ / Choose This</button>`:''}
   </div>`;
 }
 function _randomPickSelect(menuId){
@@ -11640,6 +11683,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideR{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+@keyframes slotShake{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{left:-100%}100%{left:200%}}
 
