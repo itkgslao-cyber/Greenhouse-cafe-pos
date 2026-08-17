@@ -4954,6 +4954,10 @@ function renderEOD(){
         <div style="font-size:26px;font-weight:900;color:var(--gold,#B8892B)">${fmt(totalVat)}</div>
       </div>
       <div class="card" style="text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ລວມລາຍຮັບ + VAT</div>
+        <div style="font-size:26px;font-weight:900;color:#7C3AED">${fmt(totalRevenue+totalVat)}</div>
+      </div>
+      <div class="card" style="text-align:center">
         <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ກຳໄລສຸດທິ</div>
         <div style="font-size:26px;font-weight:900;color:${netProfit>=0?'var(--c-green)':'var(--c-red)'}">${fmt(netProfit)}</div>
       </div>
@@ -6939,7 +6943,8 @@ function rptExport(){
   <Style ss:ID="s20"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#993C1D"/><Interior ss:Color="#FEF0EA" ss:Pattern="Solid"/><NumberFormat ss:Format="0.0%"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
   <Style ss:ID="s21"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Color="#1F6B45" ss:Bold="1"/><NumberFormat ss:Format="0.0%"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
   <Style ss:ID="s22"><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/><Font ss:FontName="Arial" ss:Size="13" ss:Bold="1" ss:Color="#8A6115"/><Interior ss:Color="#FBF1DD" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#EFDBA6"/></Borders></Style>
-  <Style ss:ID="s23"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#8A6115"/><Interior ss:Color="#FBF1DD" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>`;
+  <Style ss:ID="s23"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#8A6115"/><Interior ss:Color="#FBF1DD" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#DDDDDD"/></Borders></Style>
+  <Style ss:ID="s24"><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/><Font ss:FontName="Arial" ss:Size="13" ss:Bold="1" ss:Color="#5B21B6"/><Interior ss:Color="#F3EEFC" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0"/><Borders><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#DDD0F5"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#DDD0F5"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#DDD0F5"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#DDD0F5"/></Borders></Style>`;
 
   function C(v,sid,tp){
     tp=tp||'String';
@@ -6965,6 +6970,7 @@ function rptExport(){
   ws1+=`<Row ss:Height="60">
     ${Merge('\u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalInc)+' \u20ad',3,2,2)}
     ${Merge('VAT \u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalVat)+' \u20ad',22,1,2)}
+    ${Merge('\u0ea5\u0ea7\u0ea1\u0ea5\u0eb2\u0e8d\u0eae\u0eb1\u0e9a+VAT\n'+K(totalInc+totalVat)+' \u20ad',24,2,2)}
     ${Merge('\u0ea5\u0eb2\u0e8d\u0e88\u0ec8\u0eb2\u0e8d\u0e97\u0eb1\u0e87\u0eab\u0ea1\u0ebb\u0e94\n'+K(totalExp)+' \u20ad',4,1,2)}
     ${Merge('\u0e81\u0eb3\u0ec4\u0ea5\u0eaa\u0eb8\u0e94\u0e97\u0eb4\n'+K(profit)+' \u20ad',5,2,2)}
   </Row>`;
