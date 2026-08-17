@@ -83,6 +83,10 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 @keyframes slideR{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
 @keyframes slotShake{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
+@keyframes reelSlide{0%{transform:translateY(16px);opacity:.35}100%{transform:translateY(0);opacity:1}}
+@keyframes confettiBurst{0%{transform:translate(-50%,-50%) scale(.4) rotate(0deg);opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(var(--rot));opacity:0}}
+@keyframes glowPulse{0%{box-shadow:0 0 0 rgba(255,122,89,.6)}45%{box-shadow:0 0 36px rgba(255,122,89,.55)}100%{box-shadow:0 0 0 rgba(255,122,89,0)}}
+@keyframes pulseFade{0%{opacity:.45}100%{opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{left:-100%}100%{left:200%}}
 
@@ -9898,43 +9902,80 @@ function custDoRandomPick(){
   if(spinBtn){ spinBtn.disabled = true; spinBtn.style.opacity = '.6'; }
 
   const resultEl = document.getElementById('randompick-result');
-  const final = pool[Math.floor(Math.random()*pool.length)];
+
+  // Build a shuffled "reel" containing every available item in the chosen
+  // categories, then spin sequentially through it — looping past the WHOLE
+  // list 1-3 times (more loops for shorter lists so the spin never feels too
+  // short) — so customers actually see every option pass by before it lands,
+  // like a real wheel, instead of flashing random items that skip most of
+  // the menu.
+  const n = pool.length;
+  const reel = [...pool];
+  for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [reel[i],reel[j]]=[reel[j],reel[i]]; }
+  const finalIdx = Math.floor(Math.random()*n);
+  const final = reel[finalIdx];
+  // More loops for shorter lists (so a 2-3 item category still feels like a real
+  // spin, not an instant flash), fewer loops for long menus so it doesn't drag on.
+  const loops = Math.min(6, Math.max(1, Math.ceil(24/n)));
+  const totalSteps = loops*n + finalIdx + 1;
 
   // Real slot-machine feel: quick ticks at the start that gradually slow down
-  // (ease-out) for suspense, a soft tick sound on every flip, and a little
-  // fanfare + bounce when it finally lands — so it feels like a fun surprise
-  // instead of an instant, flat result.
-  const totalSteps = 18;
+  // (ease-out) for suspense, a rising-pitch tick sound on every flip, and a
+  // grand fanfare + bounce + confetti burst when it finally lands.
+  // Always spin for a fixed ~10 real seconds, no matter how many items are in the
+  // pool — fast flickering ticks at first, then a dramatic, ever-slower "final
+  // approach" on the last few items (just like a real slot machine losing
+  // momentum) right before it lands, for genuine suspense every time.
+  const SPIN_DURATION_MS = 10000;
+  const weights = [];
+  for(let s=1; s<=totalSteps; s++){ const p=s/totalSteps; weights.push(1 + 40*Math.pow(p,5)); }
+  const weightSum = weights.slice(0,-1).reduce((a,b)=>a+b,0);
+  const scale = weightSum>0 ? SPIN_DURATION_MS/weightSum : 0;
+  const delays = weights.map(w=>w*scale);
+
   let step = 0;
   function nextStep(){
     step++;
     const settled = step >= totalSteps;
-    const m = settled ? final : pool[Math.floor(Math.random()*pool.length)];
-    _renderRandomPickCard(resultEl, m, settled);
+    const progress = step/totalSteps;
+    const m = settled ? final : reel[(step-1)%n];
+    _renderRandomPickCard(resultEl, m, settled, progress);
     if(settled){
       _playSlotWin();
       if(spinBtn){ spinBtn.disabled=false; spinBtn.style.opacity=''; spinBtn.textContent='🎲 ສຸ່ມໃໝ່ / Spin Again'; }
       return;
     }
-    _playSlotTick();
-    // Ease-out curve: starts around 55ms/flip, stretches out to ~260ms near the end
-    const progress = step/totalSteps;
-    const delay = 55 + Math.round(210*progress*progress);
-    setTimeout(nextStep, delay);
+    _playSlotTick(560 + progress*260); // pitch rises as it slows down, building anticipation
+    setTimeout(nextStep, delays[step-1]);
   }
   nextStep();
 }
 // Soft "tick" heard on every shuffle flip during the random pick spin
-function _playSlotTick(){
+function _playSlotTick(freq){
   try{
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
     const o=ctx.createOscillator(), g=ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
-    o.type='square'; o.frequency.value=560;
+    o.type='square'; o.frequency.value=freq||560;
     g.gain.setValueAtTime(0.10, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.06);
     o.start(); o.stop(ctx.currentTime+0.07);
   }catch(e){}
+}
+// Small emoji confetti burst radiating out from the winning item's image, for a
+// grander "ta-da" landing moment
+function _burstConfetti(anchorEl){
+  if(!anchorEl) return;
+  const emojis = ['🎉','✨','🎊','⭐'];
+  for(let i=0;i<14;i++){
+    const span = document.createElement('span');
+    span.textContent = emojis[i%emojis.length];
+    const angle = Math.random()*Math.PI*2;
+    const dist = 55 + Math.random()*55;
+    span.style.cssText = `position:absolute;left:50%;top:50%;font-size:${15+Math.random()*11}px;pointer-events:none;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;--rot:${Math.round(Math.random()*360-180)}deg;animation:confettiBurst .8s ease-out forwards`;
+    anchorEl.appendChild(span);
+    setTimeout(()=>span.remove(), 850);
+  }
 }
 // Little ascending fanfare played when the random pick lands on its final item
 function _playSlotWin(){
@@ -9952,19 +9993,32 @@ function _playSlotWin(){
     });
   }catch(e){}
 }
-function _renderRandomPickCard(container, m, settled){
+function _renderRandomPickCard(container, m, settled, spinProgress){
   if(!container) return;
   const [ibg,ifg] = CARD_COLORS[m.id%CARD_COLORS.length];
   const imgHtml = m.img
     ? `<img src="${m.img}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`
     : `<div style="width:100%;height:100%;background:${ibg};border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:${ifg}">${m.name.slice(0,2)}</div>`;
   const hasVariants = m.variants && m.variants.length > 0;
-  container.innerHTML = `<div style="text-align:center;margin-bottom:14px;${settled?'animation:popIn .35s cubic-bezier(.34,1.56,.64,1)':'animation:slotShake .1s ease'}">
-    <div style="width:120px;height:120px;margin:0 auto 10px;box-shadow:0 6px 18px rgba(0,0,0,.18);${settled?'':'filter:blur(.5px);opacity:.85'}">${imgHtml}</div>
+  // Motion blur is strongest during the fast early flicker and eases off as the
+  // spin slows down, so the last few items right before landing look sharp and
+  // readable — real slot-machine "settling" feel.
+  const sp = spinProgress || 0;
+  const blurPx = settled ? 0 : Math.max(0.1, (1-sp)*1.7).toFixed(2);
+  const dimOpacity = settled ? 1 : Math.max(0.55, 1-(1-sp)*0.35).toFixed(2);
+  // Last stretch of the spin gets a pulsing "almost there" cue for extra suspense
+  const nearEnd = !settled && sp > 0.82;
+  container.innerHTML = `<div style="text-align:center;margin-bottom:14px;${settled?'animation:popIn .4s cubic-bezier(.34,1.56,.64,1)':'animation:reelSlide .11s ease-out'}">
+    ${nearEnd?'<div style="font-size:12px;font-weight:800;color:#FF7A59;margin-bottom:8px;animation:pulseFade .45s ease-in-out infinite alternate">🤞 ໃກ້ຈະຮູ້ແລ້ວ... / Almost there...</div>':''}
+    <div id="randompick-img-wrap" style="position:relative;width:120px;height:120px;margin:0 auto 10px;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.18);${settled?'animation:glowPulse .7s ease-out':`filter:blur(${blurPx}px);opacity:${dimOpacity}`}">${imgHtml}</div>
     <div style="font-size:17px;font-weight:900;color:#1C1917">${m.name}${settled?' 🎉':''}</div>
     <div style="font-size:14px;font-weight:800;color:#FF7A59;margin-top:2px">${hasVariants?'ຫຼາຍລາຄາ / Multiple prices':fmt(m.price)}</div>
     ${settled?`<button onclick="_randomPickSelect(${m.id})" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#3FAE7A,#1F6B45);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao',sans-serif;box-shadow:0 4px 14px rgba(31,107,69,.35)">🛒 ເລືອກລາຍການນີ້ / Choose This</button>`:''}
   </div>`;
+  if(settled){
+    const wrap = document.getElementById('randompick-img-wrap');
+    if(wrap) _burstConfetti(wrap);
+  }
 }
 function _randomPickSelect(menuId){
   const m = MENU.find(x=>x.id===menuId);
@@ -11684,6 +11738,10 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
 @keyframes slideR{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
 @keyframes slotShake{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
+@keyframes reelSlide{0%{transform:translateY(16px);opacity:.35}100%{transform:translateY(0);opacity:1}}
+@keyframes confettiBurst{0%{transform:translate(-50%,-50%) scale(.4) rotate(0deg);opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(var(--rot));opacity:0}}
+@keyframes glowPulse{0%{box-shadow:0 0 0 rgba(255,122,89,.6)}45%{box-shadow:0 0 36px rgba(255,122,89,.55)}100%{box-shadow:0 0 0 rgba(255,122,89,0)}}
+@keyframes pulseFade{0%{opacity:.45}100%{opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes shimmer{0%{left:-100%}100%{left:200%}}
 
