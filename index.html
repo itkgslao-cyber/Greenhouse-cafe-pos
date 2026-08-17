@@ -1678,9 +1678,10 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
               📥 <span id="dl-btn-label">ດາວໂຫຼດຂໍ້ມູນ</span>
             </button>
           </div>
-          <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
+          <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(31,107,69,.1)">💰</div><span class="stat-trend up" id="sum-inc-trend">↑</span></div><div class="stat-val" id="sum-inc-val" style="color:var(--brand)">₭0</div><div class="stat-label" id="sum-inc-lbl">ລາຍຮັບ</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(184,137,43,.1)">🧮</div><span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">VAT</span></div><div class="stat-val" id="sum-vat-val" style="color:var(--gold,#B8892B)">₭0</div><div class="stat-label">VAT</div></div>
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(124,58,237,.08)">🧾</div><span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ລວມ</span></div><div class="stat-val" id="sum-inc-vat-val" style="color:#7C3AED">₭0</div><div class="stat-label">ລວມລາຍຮັບ + VAT</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(5,150,105,.1)">🧾</div><span class="stat-trend up" id="sum-bill-trend">—</span></div><div class="stat-val" id="sum-bill-val" style="color:var(--c-green)">0</div><div class="stat-label">ບິນ</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(220,38,38,.08)">💸</div><span class="stat-trend dn">—</span></div><div class="stat-val" id="rpt-total-exp" style="color:var(--c-red)">₭0</div><div class="stat-label">ລາຍຈ່າຍ</div></div>
             <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(37,99,235,.08)">📈</div><span class="stat-trend up" id="rpt-profit-trend">—</span></div><div class="stat-val" id="rpt-profit-val" style="color:var(--c-blue)">₭0</div><div class="stat-label" id="rpt-profit-label">ກຳໄລ</div></div>
@@ -6508,7 +6509,7 @@ function sumGetData(){
   const baseInc  = realBills.reduce((a,b)=>a+netRevenueOf(b),0);
   const totalVat = realBills.reduce((a,b)=>a+vatOf(b),0);
   const totalExp = allExpenseEntries().filter(e=>e.date>=drpStart&&e.date<=drpEnd).reduce((a,e)=>a+e.amount,0);
-  return { baseInc, totalVat, totalExp, profit:baseInc-totalExp, bills:realBills.length };
+  return { baseInc, totalVat, totalExp, profit:baseInc-totalExp, bills:realBills.length, grandTotal:baseInc+totalVat };
 }
 
 /* ── Build chart by granularity ── */
@@ -6652,12 +6653,13 @@ function sumBuildChart(){
 /* ── Main render ── */
 function renderSummaryTab(){
   drpUpdateLabel();
-  const { baseInc, totalVat, totalExp, profit, bills } = sumGetData();
+  const { baseInc, totalVat, totalExp, profit, bills, grandTotal } = sumGetData();
   const realBills = BILLS.filter(b=>{ const d=b.date||''; return d>=drpStart&&d<=drpEnd; });
   const g=id=>document.getElementById(id);
   if(g('sum-inc-val'))      g('sum-inc-val').textContent=fmt(baseInc);
   if(g('sum-inc-lbl'))      g('sum-inc-lbl').textContent='ລາຍຮັບ';
   if(g('sum-vat-val'))      g('sum-vat-val').textContent=fmt(totalVat);
+  if(g('sum-inc-vat-val'))  g('sum-inc-vat-val').textContent=fmt(grandTotal);
   if(g('sum-bill-val'))     g('sum-bill-val').textContent=bills;
   if(g('rpt-total-exp'))    g('rpt-total-exp').textContent=fmt(totalExp);
   if(g('rpt-profit-val')){ g('rpt-profit-val').textContent=fmt(Math.abs(profit)); g('rpt-profit-val').style.color=profit>=0?'var(--c-blue)':'var(--c-red)'; }
