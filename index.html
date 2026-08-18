@@ -1406,7 +1406,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             <button class="btn btn-primary" onclick="goTo('pos')">🪑 ຈັດການໂຕະ</button>
           </div>
         </div>
-        <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
+        <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
           <div class="stat-card">
             <div class="stat-top">
               <div class="stat-icon" style="background:#FFF4F0">💰</div>
@@ -1422,6 +1422,14 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             </div>
             <div class="stat-val" id="d-vat" style="color:var(--gold,#B8892B)">₭0</div>
             <div class="stat-label">VAT ມື້ນີ້</div>
+          </div>
+          <div class="stat-card" style="border:1.5px solid #10B98155">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(16,185,129,.12)">💵</div>
+              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ເງິນສົດ+ໂອນ</span>
+            </div>
+            <div class="stat-val" id="d-actual" style="color:#10B981">₭0</div>
+            <div class="stat-label">ຍອດຮັບຈິງມື້ນີ້</div>
           </div>
           <div class="stat-card">
             <div class="stat-top">
@@ -4002,8 +4010,10 @@ function renderDash(){
   const todayBills=BILLS.filter(b=>b.date===today && !b.voided);
   const paid=todayBills.reduce((a,b)=>a+netRevenueOf(b),0);
   const todayVat=todayBills.reduce((a,b)=>a+vatOf(b),0);
+  const todayConsign=todayBills.reduce((a,b)=>a+(b.consignTotal||0),0);
   document.getElementById('d-rev').textContent=fmt(paid);
   const dVatEl=document.getElementById('d-vat'); if(dVatEl) dVatEl.textContent=fmt(todayVat);
+  const dActualEl=document.getElementById('d-actual'); if(dActualEl) dActualEl.textContent=fmt(paid+todayVat+todayConsign);
   document.getElementById('d-bills').textContent=todayBills.length;
   document.getElementById('d-tbl').textContent=`${TABLES.filter(t=>t.status==='busy').length}/${TABLES.length}`;
   document.getElementById('d-cust').textContent=CUSTOMERS.length;
