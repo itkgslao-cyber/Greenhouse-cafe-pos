@@ -1423,6 +1423,14 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             <div class="stat-val" id="d-vat" style="color:var(--gold,#B8892B)">₭0</div>
             <div class="stat-label">VAT ມື້ນີ້</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(124,58,237,.1)">➕</div>
+              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ລາຍຮັບ+VAT</span>
+            </div>
+            <div class="stat-val" id="d-rev-vat" style="color:#7C3AED">₭0</div>
+            <div class="stat-label">ລວມລາຍຮັບ + VAT</div>
+          </div>
           <div class="stat-card" style="border:1.5px solid #10B98155">
             <div class="stat-top">
               <div class="stat-icon" style="background:rgba(16,185,129,.12)">💵</div>
@@ -4013,6 +4021,7 @@ function renderDash(){
   const todayConsign=todayBills.reduce((a,b)=>a+(b.consignTotal||0),0);
   document.getElementById('d-rev').textContent=fmt(paid);
   const dVatEl=document.getElementById('d-vat'); if(dVatEl) dVatEl.textContent=fmt(todayVat);
+  const dRevVatEl=document.getElementById('d-rev-vat'); if(dRevVatEl) dRevVatEl.textContent=fmt(paid+todayVat);
   const dActualEl=document.getElementById('d-actual'); if(dActualEl) dActualEl.textContent=fmt(paid+todayVat+todayConsign);
   document.getElementById('d-bills').textContent=todayBills.length;
   document.getElementById('d-tbl').textContent=`${TABLES.filter(t=>t.status==='busy').length}/${TABLES.length}`;
