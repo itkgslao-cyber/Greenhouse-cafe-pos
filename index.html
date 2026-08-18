@@ -1407,62 +1407,12 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
           </div>
         </div>
         <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:#FFF4F0">💰</div>
-              <span class="stat-trend up">↑ 12.5%</span>
-            </div>
-            <div class="stat-val" id="d-rev">₭0</div>
-            <div class="stat-label">ລາຍຮັບມື້ນີ້</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:rgba(184,137,43,.1)">🧮</div>
-              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">VAT</span>
-            </div>
-            <div class="stat-val" id="d-vat" style="color:var(--gold,#B8892B)">₭0</div>
-            <div class="stat-label">VAT ມື້ນີ້</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:rgba(124,58,237,.1)">➕</div>
-              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ລາຍຮັບ+VAT</span>
-            </div>
-            <div class="stat-val" id="d-rev-vat" style="color:#7C3AED">₭0</div>
-            <div class="stat-label">ລວມລາຍຮັບ + VAT</div>
-          </div>
-          <div class="stat-card" style="border:1.5px solid #10B98155">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:rgba(16,185,129,.12)">💵</div>
-              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ເງິນສົດ+ໂອນ</span>
-            </div>
-            <div class="stat-val" id="d-actual" style="color:#10B981">₭0</div>
-            <div class="stat-label">ຍອດຮັບຈິງມື້ນີ້</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--c-green-bg)">🧾</div>
-              <span class="stat-trend up">↑ +8</span>
-            </div>
-            <div class="stat-val" id="d-bills">0</div>
-            <div class="stat-label">ບິນມື້ນີ້</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--c-amber-bg)">🪑</div>
-              <span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">60%</span>
-            </div>
-            <div class="stat-val" id="d-tbl">0/20</div>
-            <div class="stat-label">ໂຕະໃຊ້ຢູ່</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--c-blue-bg)">👥</div>
-              <span class="stat-trend up">↑ +15</span>
-            </div>
-            <div class="stat-val" id="d-cust">0</div>
-            <div class="stat-label">ລູກຄ້າມື້ນີ້</div>
-          </div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(31,107,69,.1)">💰</div><span class="stat-trend up">↑ 12.5%</span></div><div class="stat-val" id="d-rev">₭0</div><div class="stat-label">ລາຍຮັບ</div></div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(184,137,43,.1)">🧮</div><span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">VAT</span></div><div class="stat-val" id="d-vat" style="color:var(--gold,#B8892B)">₭0</div><div class="stat-label">VAT</div></div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(124,58,237,.08)">🧾</div><span class="stat-trend" style="background:var(--panel-bg3);color:var(--t2)">ລວມ</span></div><div class="stat-val" id="d-rev-vat" style="color:#7C3AED">₭0</div><div class="stat-label">ລວມລາຍຮັບ + VAT</div></div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(5,150,105,.1)">🧾</div><span class="stat-trend up">—</span></div><div class="stat-val" id="d-bills" style="color:var(--c-green)">0</div><div class="stat-label">ບິນ</div></div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(220,38,38,.08)">💸</div><span class="stat-trend dn">—</span></div><div class="stat-val" id="d-exp" style="color:var(--c-red)">₭0</div><div class="stat-label">ລາຍຈ່າຍ</div></div>
+          <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(37,99,235,.08)">📈</div><span class="stat-trend up">—</span></div><div class="stat-val" id="d-profit" style="color:var(--c-blue)">₭0</div><div class="stat-label">ກຳໄລ</div></div>
         </div>
         <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px">
           <div class="card">
@@ -4018,14 +3968,13 @@ function renderDash(){
   const todayBills=BILLS.filter(b=>b.date===today && !b.voided);
   const paid=todayBills.reduce((a,b)=>a+netRevenueOf(b),0);
   const todayVat=todayBills.reduce((a,b)=>a+vatOf(b),0);
-  const todayConsign=todayBills.reduce((a,b)=>a+(b.consignTotal||0),0);
+  const todayExp=(typeof allExpenseEntries==='function'?allExpenseEntries():EXPENSES).filter(e=>e.date===today).reduce((a,e)=>a+e.amount,0);
   document.getElementById('d-rev').textContent=fmt(paid);
   const dVatEl=document.getElementById('d-vat'); if(dVatEl) dVatEl.textContent=fmt(todayVat);
   const dRevVatEl=document.getElementById('d-rev-vat'); if(dRevVatEl) dRevVatEl.textContent=fmt(paid+todayVat);
-  const dActualEl=document.getElementById('d-actual'); if(dActualEl) dActualEl.textContent=fmt(paid+todayVat+todayConsign);
   document.getElementById('d-bills').textContent=todayBills.length;
-  document.getElementById('d-tbl').textContent=`${TABLES.filter(t=>t.status==='busy').length}/${TABLES.length}`;
-  document.getElementById('d-cust').textContent=CUSTOMERS.length;
+  const dExpEl=document.getElementById('d-exp'); if(dExpEl) dExpEl.textContent=fmt(todayExp);
+  const dProfitEl=document.getElementById('d-profit'); if(dProfitEl) dProfitEl.textContent=fmt(paid-todayExp);
   // chart - real 7 days with correct day labels
   const _DAY_LBL=['ອາ','ຈ','ອ','ພ','ພຫ','ສ','ເສ']; // 0=Sun,1=Mon,...,6=Sat
   const vals=Array.from({length:7},(_,i)=>{
