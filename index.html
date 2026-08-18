@@ -4511,6 +4511,13 @@ function printAndWait(){
   // Print the bill (browser print dialog — does NOT commit)
   doPrintBill(PENDING_BILL);
 
+  // ─ Cashier: ບັນທຶກເຂົ້າລະບົບທັນທີຫຼັງພິມບິນ (ບໍ່ຜ່ານຂັ້ນຕອນ "ຮັບເງິນແລ້ວ-ຢືນຢັນ")
+  //   ເພື່ອປ້ອງກັນການພິມບິນແລ້ວບໍ່ກົດຢືນຢັນ (ໂກງເງິນ/ບໍ່ບັນທຶກຍອດຂາຍ) ──
+  if(S.user?.role === 'cashier'){
+    finalConfirmPayment();
+    return;
+  }
+
   // Switch to step 2 — waiting for payment
   document.getElementById('co-step1').style.display = 'none';
   document.getElementById('co-step2').style.display = 'block';
@@ -4924,6 +4931,7 @@ function renderEOD(){
   const voidedBills = BILLS.filter(b=>b.date===today && b.voided);
   const totalRevenue = todayBills.reduce((a,b)=>a+netRevenueOf(b),0);
   const totalVat      = todayBills.reduce((a,b)=>a+vatOf(b),0);
+  const totalConsign  = todayBills.reduce((a,b)=>a+(b.consignTotal||0),0);
   const totalBills   = todayBills.length;
   const totalVoided  = voidedBills.length;
 
@@ -4982,10 +4990,21 @@ function renderEOD(){
         <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ລວມລາຍຮັບ + VAT</div>
         <div style="font-size:26px;font-weight:900;color:#7C3AED">${fmt(totalRevenue+totalVat)}</div>
       </div>
+      ${totalConsign>0?`<div class="card" style="text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ຝາກຂາຍ (ຄ້າງສົ່ງເຈົ້າຂອງ)</div>
+        <div style="font-size:26px;font-weight:900;color:#0EA5E9">${fmt(totalConsign)}</div>
+      </div>`:''}
+      <div class="card" style="text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ຍອດຮັບຈິງ (ທຸກຊ່ອງທາງ)</div>
+        <div style="font-size:26px;font-weight:900;color:var(--c-green)">${fmt(totalRevenue+totalVat+totalConsign)}</div>
+      </div>
       <div class="card" style="text-align:center">
         <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:6px">ກຳໄລສຸດທິ</div>
         <div style="font-size:26px;font-weight:900;color:${netProfit>=0?'var(--c-green)':'var(--c-red)'}">${fmt(netProfit)}</div>
       </div>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin:-14px 0 24px 2px">
+      ⓘ ລາຍຮັບ (${fmt(totalRevenue)}) + VAT (${fmt(totalVat)})${totalConsign>0?` + ຝາກຂາຍ (${fmt(totalConsign)})`:''} = ຍອດຮັບຈິງ (${fmt(totalRevenue+totalVat+totalConsign)}) — ຄືຍອດດຽວກັນກັບແຖວ "ລວມຮັບຈິງ" ໃນກ່ອງການຊຳລະດ້ານລຸ່ມ
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
