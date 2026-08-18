@@ -1990,6 +1990,19 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
                 </div>
               </div>
               <button class="btn btn-primary" onclick="exportBackupJSON()">📥 ດາວໂຫລດຂໍ້ມູນສຳຮອງ</button>
+
+              <div class="set-sec-title" style="margin-top:28px">📤 ນຳເຂົ້າຂໍ້ມູນເກົ່າ / Import Historical Data</div>
+              <div style="background:var(--panel-bg2);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:16px">
+                <div style="font-size:13px;color:var(--t1);font-weight:700;margin-bottom:8px">ນຳເຂົ້າໄຟລ໌ export ຈາກລະບົບເກົ່າໄດ້ໂດຍກົງ (.xls) ຫຼືໄຟລ໌ .json ທີ່ແປງແລ້ວ</div>
+                <div style="font-size:12px;color:var(--t2);line-height:1.9">
+                  ດາວໂຫລດ export (Sheet "ລາຍຮັບ(ບິນ)"+"ລາຍຈ່າຍ") ຈາກລະບົບເກົ່າ ແລ້ວອັບໂຫລດເຂົ້ານີ້ໄດ້ເລີຍ — ລະບົບຈະສະແດງສະຫຼຸບໃຫ້ກວດກ່ອນ ແລ້ວຈຶ່ງບັນທຶກ<br>
+                  ບິນທີ່ IDຊ້ຳກັບຂໍ້ມູນປັດຈຸບັນຈະຖືກຂ້າມໄປອັດຕະໂນມັດ (ບໍ່ຂຽນທັບ) — ລາຍຈ່າຍບໍ່ມີການກັນຊ້ຳ ຢືນຢັນຄັ້ງດຽວເທົ່ານັ້ນ
+                </div>
+              </div>
+              <input type="file" id="import-old-file" accept=".json,.xls,.xml" style="display:none" onchange="handleOldDataFileSelect(event)">
+              <button class="btn" style="border:1.5px solid var(--bdr)" onclick="document.getElementById('import-old-file').click()">📂 ເລືອກໄຟລ໌ (.xls ຫຼື .json)</button>
+              <div id="import-old-preview" style="margin-top:14px"></div>
+              <div id="import-batch-list"></div>
             </div>
             <div id="st-reset-tab" class="hidden">
               <div class="set-sec-title" style="color:#DC2626">🗑️ ລຶບຂໍ້ມູນ</div>
@@ -4914,12 +4927,13 @@ function renderEOD(){
   const totalBills   = todayBills.length;
   const totalVoided  = voidedBills.length;
 
-  // Payment breakdown
+  // Payment breakdown (ຍອດຮັບຈິງຕໍ່ຊ່ອງທາງ — ລວມ VAT ແລະ ສ່ວນຝາກຂາຍ, ຄືຍອດເງິນທີ່ລູກຄ້າຈ່າຍຕົວຈິງຜ່ານຊ່ອງທາງນັ້ນ)
   const payBreakdown = {};
   todayBills.forEach(b=>{
     const key = b.pay||'cash';
     payBreakdown[key] = (payBreakdown[key]||0) + b.total;
   });
+  const payBreakdownTotal = Object.values(payBreakdown).reduce((a,v)=>a+v,0);
   const payNames = {cash:'ເງິນສົດ 💵', bcel:'BCEL One 📱', ldb:'LDB 🏦', card:'ບັດ 💳'};
 
   // Top items today
@@ -4984,8 +4998,9 @@ function renderEOD(){
             <span style="font-weight:700">${fmt(v)}</span>
           </div>`).join('')||'<div style="color:var(--t3);font-size:13px">ບໍ່ມີລາຍຮັບ</div>'}
         <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;font-weight:900">
-          <span>ລວມ</span><span style="color:var(--c-green)">${fmt(totalRevenue)}</span>
+          <span>ລວມຮັບຈິງ (ລວມ VAT)</span><span style="color:var(--c-green)">${fmt(payBreakdownTotal)}</span>
         </div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">* ຍອດນີ້ລວມ VAT ແລະ ສ່ວນຝາກຂາຍ — ຕ່າງຈາກກ່ອງ "ລາຍຮັບ" ດ້ານເທິງທີ່ຫັກ VAT/ຝາກຂາຍອອກແລ້ວ</div>
       </div>
 
       <!-- Top 5 items -->
@@ -7177,6 +7192,178 @@ function exportBackupJSON(){
     toast('ເກີດຂໍ້ຜິດພາດ — ລອງໃໝ່','error');
   }
 }
+
+/* ── ນຳເຂົ້າຂໍ້ມູນເກົ່າ (Import Historical Data) — ອ່ານໄຟລ໌ JSON, ສະແດງສະຫຼຸບ, ຢືນຢັນກ່ອນບັນທຶກ ── */
+let _importOldData = null;
+/* ── ອ່ານໄຟລ໌ export ດິບຈາກລະບົບເກົ່າ (SpreadsheetML .xls) ໂດຍກົງ — Sheet2=ບິນ, Sheet3=ລາຍຈ່າຍ ── */
+function _oldSysPayMap(k){ return ({'ອື່ນົ':'cash','BCEL One':'bcel'})[k] || k; }
+function _oldSysCatMap(k){ return ({'ວັດຖຸດິບ':'ingredient','ອື່ນົ':'other'})[k] || 'other'; }
+function parseOldSystemXML(text){
+  const NS = 'urn:schemas-microsoft-com:office:spreadsheet';
+  const xml = new DOMParser().parseFromString(text, 'text/xml');
+  if(xml.getElementsByTagName('parsererror').length) throw new Error('xml-parse-error');
+  const sheets = Array.from(xml.getElementsByTagNameNS(NS,'Worksheet'));
+  function sheetRows(sheet){
+    if(!sheet) return [];
+    const table = sheet.getElementsByTagNameNS(NS,'Table')[0];
+    if(!table) return [];
+    return Array.from(table.getElementsByTagNameNS(NS,'Row')).map(row=>
+      Array.from(row.getElementsByTagNameNS(NS,'Cell')).map(cell=>{
+        const d = cell.getElementsByTagNameNS(NS,'Data')[0];
+        return d ? d.textContent : '';
+      })
+    );
+  }
+  const bills = [];
+  sheetRows(sheets[1]).forEach(r=>{
+    if(!r || !r[0] || !r[0].startsWith('B-')) return;
+    const [bid, tbl, date, time, itemtxt, amtStr, pay, by] = r;
+    const amt = Math.round(parseFloat(amtStr)||0);
+    const tm = (tbl||'').match(/\d+/);
+    bills.push({
+      id: bid, table: tbl||'', tableId: tm ? parseInt(tm[0],10) : null,
+      items: [{n:itemtxt||'', q:1, p:amt, mid:null}],
+      sub: amt, vat:0, disc:0, total: amt, consignTotal: 0,
+      pay: _oldSysPayMap(pay), received: amt, change: 0,
+      time: time||'', date: date||'', by: by||'Admin',
+      imported:true, importSource:'old-system-xml'
+    });
+  });
+  const expenses = [];
+  sheetRows(sheets[2]).forEach(r=>{
+    if(!r || !r[0] || !/^\d+$/.test(r[0])) return;
+    const [idx, cat, name, date, amtStr, by, note] = r;
+    expenses.push({
+      cat: _oldSysCatMap(cat), name: name||'', amount: Math.round(parseFloat(amtStr)||0),
+      date: date||'', by: by||'Admin', note: note||'',
+      imported:true, importSource:'old-system-xml'
+    });
+  });
+  return { bills, expenses };
+}
+
+function handleOldDataFileSelect(ev){
+  if(S.user?.role !== 'admin'){ toast('ນຳເຂົ້າຂໍ້ມູນໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); ev.target.value=''; return; }
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const raw = e.target.result;
+    let billsArr, expArr;
+    if(raw.trim().startsWith('<')){
+      // ໄຟລ໌ export ດິບຈາກລະບົບເກົ່າ (SpreadsheetML XML)
+      let parsed;
+      try{ parsed = parseOldSystemXML(raw); }
+      catch(err){ toast('ອ່ານໄຟລ໌ລະບົບເກົ່າບໍ່ໄດ້ — ຮູບແບບບໍ່ຖືກຕ້ອງ','error'); ev.target.value=''; return; }
+      billsArr = parsed.bills; expArr = parsed.expenses;
+    } else {
+      let data;
+      try{ data = JSON.parse(raw); }
+      catch(err){ toast('ໄຟລ໌ບໍ່ຖືກຕ້ອງ (ບໍ່ແມ່ນ JSON ຫຼື XML ທີ່ຮູ້ຈັກ)','error'); ev.target.value=''; return; }
+      const billsObj = data.bills || {};
+      billsArr = Array.isArray(billsObj) ? billsObj : Object.values(billsObj);
+      expArr = Array.isArray(data.expenses) ? data.expenses : [];
+    }
+    if(!billsArr.length && !expArr.length){ toast('ບໍ່ພົບຂໍ້ມູນບິນ/ລາຍຈ່າຍໃນໄຟລ໌ນີ້','error'); ev.target.value=''; return; }
+
+    const existingIds = new Set((BILLS||[]).map(b=>b.id));
+    const newBills = billsArr.filter(b=>b && b.id && !existingIds.has(b.id));
+    const dupCount = billsArr.length - newBills.length;
+    const billTotal = newBills.reduce((a,b)=>a+(b.total||0),0);
+    const expTotal = expArr.reduce((a,x)=>a+(x.amount||0),0);
+
+    _importOldData = { bills: newBills, expenses: expArr };
+
+    const box = document.getElementById('import-old-preview');
+    box.innerHTML = `
+      <div style="background:var(--panel-bg2);border:1.5px solid var(--brand);border-radius:12px;padding:16px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:10px">📋 ສະຫຼຸບກ່ອນນຳເຂົ້າ</div>
+        <div style="font-size:12px;color:var(--t2);line-height:2">
+          🧾 ບິນຂາຍໃໝ່ທີ່ຈະນຳເຂົ້າ: <b>${newBills.length}</b> ບິນ — ລວມ <b>${fmt(billTotal)} ₭</b><br>
+          ${dupCount>0 ? `⚠️ ຂ້າມ (ID ຊ້ຳກັບຂໍ້ມູນປັດຈຸບັນ): <b>${dupCount}</b> ບິນ<br>` : ''}
+          💸 ລາຍຈ່າຍທີ່ຈະນຳເຂົ້າ: <b>${expArr.length}</b> ລາຍການ — ລວມ <b>${fmt(expTotal)} ₭</b>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:8px">ກົດຢືນຢັນເພື່ອບັນທຶກເຂົ້າ Firebase (branch2) — ສາມາດກວດຄືນ/ລຶບພາຍຫຼັງໄດ້ຖ້າຜິດພາດ</div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn btn-primary" onclick="confirmImportOldData()">✅ ຢືນຢັນນຳເຂົ້າ</button>
+          <button class="btn" style="border:1.5px solid var(--bdr)" onclick="cancelImportOldData()">✖ ຍົກເລີກ</button>
+        </div>
+      </div>`;
+  };
+  reader.readAsText(file);
+}
+function cancelImportOldData(){
+  _importOldData = null;
+  document.getElementById('import-old-preview').innerHTML = '';
+  document.getElementById('import-old-file').value = '';
+}
+function confirmImportOldData(){
+  if(!_importOldData){ toast('ບໍ່ມີຂໍ້ມູນທີ່ຈະນຳເຂົ້າ','error'); return; }
+  if(S.user?.role !== 'admin'){ toast('ນຳເຂົ້າຂໍ້ມູນໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
+  const { bills, expenses } = _importOldData;
+  const batchId = 'imp_' + Date.now();
+  const batchLabel = new Date().toLocaleString('lo-LA');
+  bills.forEach(b=>{
+    b.importBatch = batchId;
+    BILLS.push(b);
+    if(fbDB) fbSaveBill(b);
+  });
+  expenses.forEach(x=>{
+    const newExp = { id: expIdCtr++, cat:x.cat||'other', name:x.name||'', amount:x.amount||0, date:x.date||'', by:x.by||'Admin', note:x.note||'', imported:true, importBatch: batchId };
+    EXPENSES.push(newExp);
+    if(fbDB) fbSaveExpense(newExp);
+  });
+  if(fbDB && expenses.length) fbDB.ref(BRANCH_PATH+'meta/expIdCtr').set(expIdCtr).catch(e=>{});
+  toast(`✅ ນຳເຂົ້າສຳເລັດ: ${bills.length} ບິນ, ${expenses.length} ລາຍຈ່າຍ`,'success');
+  _importOldData = null;
+  document.getElementById('import-old-preview').innerHTML = '';
+  document.getElementById('import-old-file').value = '';
+  if(typeof renderExpenseView==='function') renderExpenseView();
+  if(typeof renderDash==='function') renderDash();
+  if(typeof renderImportBatches==='function') renderImportBatches();
+}
+
+/* ── ຊຸດຂໍ້ມູນທີ່ນຳເຂົ້າ — ເບິ່ງ/ຍົກເລີກ(ລຶບຖາວອນ)ທັງຊຸດໄດ້ ຖ້າພົບບັນຫາ ── */
+function renderImportBatches(){
+  const box = document.getElementById('import-batch-list');
+  if(!box) return;
+  const map = {};
+  (BILLS||[]).forEach(b=>{ if(b.importBatch){ (map[b.importBatch]=map[b.importBatch]||{bills:0,billTotal:0,exp:0,expTotal:0}).bills++; map[b.importBatch].billTotal += (b.total||0); } });
+  (EXPENSES||[]).forEach(x=>{ if(x.importBatch){ (map[x.importBatch]=map[x.importBatch]||{bills:0,billTotal:0,exp:0,expTotal:0}).exp++; map[x.importBatch].expTotal += (x.amount||0); } });
+  const ids = Object.keys(map).sort().reverse();
+  if(!ids.length){ box.innerHTML = ''; return; }
+  box.innerHTML = `<div style="font-size:12px;font-weight:800;margin:16px 0 8px">📦 ຊຸດຂໍ້ມູນທີ່ນຳເຂົ້າແລ້ວ</div>` + ids.map(id=>{
+    const t = parseInt(id.replace('imp_',''),10);
+    const label = isNaN(t) ? id : new Date(t).toLocaleString('lo-LA');
+    const m = map[id];
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel-bg2);border:1px solid var(--bdr);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:12px">
+      <div>🕒 ${label}<br><span style="color:var(--t3)">🧾 ${m.bills} ບິນ (${fmt(m.billTotal)} ₭) · 💸 ${m.exp} ລາຍຈ່າຍ (${fmt(m.expTotal)} ₭)</span></div>
+      <button class="btn btn-danger btn-sm" onclick="undoImportBatch('${id}')">🗑️ ຍົກເລີກຊຸດນີ້</button>
+    </div>`;
+  }).join('');
+}
+function undoImportBatch(batchId){
+  if(S.user?.role !== 'admin'){ toast('ລຶບໄດ້ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
+  const billsToRemove = (BILLS||[]).filter(b=>b.importBatch===batchId);
+  const expToRemove = (EXPENSES||[]).filter(x=>x.importBatch===batchId);
+  if(!billsToRemove.length && !expToRemove.length){ toast('ບໍ່ພົບຊຸດນີ້','error'); return; }
+  if(!confirm(`ລຶບຖາວອນ ${billsToRemove.length} ບິນ ແລະ ${expToRemove.length} ລາຍຈ່າຍ ຈາກຊຸດນຳເຂົ້ານີ້?\n\nການລຶບນີ້ຈະລຶບອອກຈາກ Firebase ຈິງ — ບໍ່ສາມາດກູ້ຄືນຜ່ານໜ້ານີ້ໄດ້`)) return;
+  billsToRemove.forEach(b=>{
+    const idx = BILLS.indexOf(b);
+    if(idx>-1) BILLS.splice(idx,1);
+    if(fbDB) fbDB.ref(BRANCH_PATH+'bills/'+b.id).remove().catch(e=>{});
+  });
+  expToRemove.forEach(x=>{
+    const idx = EXPENSES.indexOf(x);
+    if(idx>-1) EXPENSES.splice(idx,1);
+    if(fbDB) fbDB.ref(BRANCH_PATH+'expenses/'+x.id).remove().catch(e=>{});
+  });
+  toast(`✅ ຍົກເລີກຊຸດແລ້ວ: ລຶບ ${billsToRemove.length} ບິນ, ${expToRemove.length} ລາຍຈ່າຍ`,'success');
+  if(typeof renderExpenseView==='function') renderExpenseView();
+  if(typeof renderDash==='function') renderDash();
+  renderImportBatches();
+}
+
 function setTab(t,el){
   ['store','system','payment','printer','notif','users','roles','backup','reset-tab'].forEach(id=>document.getElementById(`st-${id}`)?.classList.add('hidden'));
   document.querySelectorAll('.set-nav-item').forEach(n=>n.classList.remove('active'));
@@ -7185,6 +7372,7 @@ function setTab(t,el){
   if(t==='payment') renderBankQRSettings();
   if(t==='users')   renderUsersInSettings();
   if(t==='roles')   renderRolesInSettings();
+  if(t==='backup')  { if(typeof renderImportBatches==='function') renderImportBatches(); }
   // Ensure reset tab visibility
   const _rt2=document.getElementById('nav-reset-tab');
   if(_rt2) _rt2.style.display=(S.role==='admin')?'flex':'none';
