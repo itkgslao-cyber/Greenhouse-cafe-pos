@@ -1674,7 +1674,7 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
             <span id="sum-viewing-text" style="font-size:14px;font-weight:800;color:var(--t1)">ມື້ນີ້</span>
             <span id="sum-viewing-range" style="font-size:12px;color:var(--t3)"></span>
             <div style="flex:1"></div>
-            <button onclick="rptExport()" style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--r-full);border:1.5px solid var(--brand);background:var(--brand);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+            <button id="sum-download-btn" onclick="rptExport()" style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--r-full);border:1.5px solid var(--brand);background:var(--brand);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
               📥 <span id="dl-btn-label">ດາວໂຫຼດຂໍ້ມູນ</span>
             </button>
           </div>
@@ -3054,7 +3054,7 @@ const RC = {
   admin:   {label:'Admin',     icon:'👑', cls:'bo', navs:['dashboard','pos','menu','stock','reports','eod','loyalty','settings']},
   manager: {label:'ຜູ້ຈັດການ', icon:'🏪', cls:'bb', navs:['dashboard','pos','menu','stock','reports','eod','loyalty','settings']},
   staff:   {label:'ພະນັກງານ', icon:'🧑', cls:'bg', navs:['pos','stock']},
-  cashier: {label:'Cashier',   icon:'💵', cls:'by', navs:['dashboard','pos','menu','stock','loyalty']},
+  cashier: {label:'Cashier',   icon:'💵', cls:'by', navs:['dashboard','pos','menu','stock','loyalty','reports','eod']},
   accounting: {label:'ບັນຊີ', icon:'🧮', cls:'bp', navs:['dashboard','pos','menu','stock','loyalty','reports']},
 };
 const NC = {
@@ -4725,6 +4725,7 @@ function confirmVoidBill(){
 ================================================================ */
 let _bdItems = [];
 function openBackdatedBillModal(){
+  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍງານໄດ້ຢ່າງດຽວ ບໍ່ສາມາດບັນທຶກໄດ້','error'); return; }
   _bdItems = [{name:'',qty:1,price:0}];
   const today = new Date().toISOString().slice(0,10);
   const ov = document.createElement('div');
@@ -4888,6 +4889,16 @@ function exportCSV(){
    END-OF-DAY REPORT
 ================================================================ */
 let _eodCashInput = 0;
+let _eodCounted = {}; // { [payMethodKey]: countedAmountEnteredByStaff } — resets each session, same as _eodCashInput
+// Friendly label for any payment method key, including dynamic bank_XXXX QR entries (BANK_QR)
+function payMethodLabel(k){
+  if(k==='cash') return 'ເງິນສົດ 💵';
+  if(k==='bcel') return 'BCEL One 📱';
+  if(k==='ldb') return 'LDB 🏦';
+  if(k==='card') return 'ບັດ 💳';
+  if(typeof BANK_QR!=='undefined' && BANK_QR[k]) return (BANK_QR[k].name||'ທະນາຄານ') + ' ' + (BANK_QR[k].icon||'🏦');
+  return k || 'ອື່ນໆ';
+}
 function renderEOD(){
   const today = new Date().toISOString().slice(0,10);
   const LAO_MN=['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
@@ -4969,7 +4980,7 @@ function renderEOD(){
         <div style="font-size:14px;font-weight:800;margin-bottom:14px">ການຊຳລະ</div>
         ${Object.entries(payBreakdown).map(([k,v])=>`
           <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:13px">
-            <span>${payNames[k]||k}</span>
+            <span>${payMethodLabel(k)}</span>
             <span style="font-weight:700">${fmt(v)}</span>
           </div>`).join('')||'<div style="color:var(--t3);font-size:13px">ບໍ່ມີລາຍຮັບ</div>'}
         <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;font-weight:900">
@@ -4989,26 +5000,20 @@ function renderEOD(){
       </div>
     </div>
 
-    <!-- Cash Reconciliation -->
+    <!-- Cash + Transfer Reconciliation — every payment channel used today, so a shortfall
+         shows up on the exact channel it's missing from, instead of one blended total -->
     <div class="card" style="margin-bottom:16px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:14px">🔒 ກ່ອງ Cash — ຕໍ່ທານ</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:center">
-        <div>
-          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ລາຍຮັບ Cash (ລະບົບ)</div>
-          <div style="font-size:18px;font-weight:800">${fmt(cashFromBills)}</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Cash ທີ່ນັບຈິງ (₭)</div>
-          <input type="number" class="form-input" id="eod-cash-input" value="${_eodCashInput||''}"
-            placeholder="0" oninput="_eodCashInput=parseInt(this.value)||0;_updateCashDiff(${cashFromBills})"
-            style="font-size:16px;font-weight:700;text-align:right">
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ຜົນຕ່າງ</div>
-          <div id="eod-cash-diff" style="font-size:18px;font-weight:800;color:${cashDiff===0?'var(--c-green)':cashDiff>0?'var(--c-green)':'var(--c-red)'}">
-            ${cashDiff===0?'✅ ຕົງ':(cashDiff>0?'+':'')+fmt(cashDiff)}
-          </div>
-        </div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px">🔒 ດຸ່ນດ່ຽງເງິນ — ທຸກຊ່ອງທາງ</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px">ໃສ່ຍອດທີ່ນັບໄດ້ຈິງ (ເງິນສົດ/ໂອນ) ຂອງແຕ່ລະຊ່ອງທາງ — ລະບົບຈະສະແດງຜົນຕ່າງແຍກຕາມຊ່ອງທາງ</div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:10px;font-size:11px;color:var(--t3);font-weight:700;padding-bottom:8px;border-bottom:1.5px solid var(--bdr)">
+        <div>ຊ່ອງທາງ</div><div style="text-align:right">ລະບົບ</div><div style="text-align:right">ນັບໄດ້ຈິງ (₭)</div><div style="text-align:right">ຜົນຕ່າງ</div>
+      </div>
+      <div id="eod-recon-rows"></div>
+      <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:10px;padding-top:10px;margin-top:8px;border-top:2px solid var(--bdr);font-weight:900;font-size:14px;align-items:center">
+        <div>ລວມທັງໝົດ</div>
+        <div id="eod-recon-total-sys" style="text-align:right">₭0</div>
+        <div id="eod-recon-total-counted" style="text-align:right">₭0</div>
+        <div id="eod-recon-total-diff" style="text-align:right">₭0</div>
       </div>
     </div>
 
@@ -5028,12 +5033,64 @@ function renderEOD(){
             <td style="padding:7px 0;font-weight:700;color:var(--brand)">${b.id}</td>
             <td style="padding:7px 0">${b.table}</td>
             <td style="padding:7px 0;text-align:right;font-weight:700">${fmt(b.total)}</td>
-            <td style="padding:7px 0;padding-left:12px">${b.pay||'cash'}</td>
+            <td style="padding:7px 0;padding-left:12px">${payMethodLabel(b.pay||'cash')}</td>
             <td style="padding:7px 0;text-align:right;color:var(--t3)">${b.time}</td>
           </tr>`).join('')}
         </tbody>
       </table>` : '<div style="color:var(--t3);font-size:13px;text-align:center;padding:20px">ບໍ່ມີບິນວັນນີ້</div>'}
     </div>`;
+
+  _renderEodReconRows(payBreakdown);
+}
+
+// Build the per-payment-method reconciliation rows (system total vs staff-entered
+// counted amount vs difference) — re-run whenever the EOD page renders or an input
+// changes, so a shortfall is visible on the exact channel it's missing from.
+function _renderEodReconRows(payBreakdown){
+  const wrap = document.getElementById('eod-recon-rows');
+  if(!wrap) return;
+  const keys = Object.keys(payBreakdown);
+  wrap.innerHTML = keys.length ? keys.map(k=>{
+    const sys = payBreakdown[k]||0;
+    const counted = _eodCounted[k]||0;
+    const diff = counted - sys;
+    return `<div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+      <div>${payMethodLabel(k)}</div>
+      <div style="text-align:right;font-weight:700">${fmt(sys)}</div>
+      <div style="text-align:right"><input type="number" class="form-input" id="eod-recon-input-${k}" value="${_eodCounted[k]||''}" placeholder="0"
+        oninput="_eodCounted['${k}']=parseInt(this.value)||0; if('${k}'==='cash'){_eodCashInput=_eodCounted['${k}'];} _updateEodRecon(${JSON.stringify(payBreakdown)})"
+        style="font-size:14px;font-weight:700;text-align:right;padding:6px 8px"></div>
+      <div id="eod-recon-diff-${k}" style="text-align:right;font-weight:800;color:${diff===0?'var(--c-green)':diff>0?'var(--c-green)':'var(--c-red)'}">${diff===0?'✅ ຕົງ':(diff>0?'+':'')+fmt(diff)}</div>
+    </div>`;
+  }).join('') : '<div style="color:var(--t3);font-size:13px;text-align:center;padding:16px">ບໍ່ມີລາຍຮັບມື້ນີ້</div>';
+  _updateEodRecon(payBreakdown);
+}
+
+// Recompute per-row diffs + grand totals live, without rebuilding the input fields
+// (keeps cursor focus while typing)
+function _updateEodRecon(payBreakdown){
+  let sysTotal=0, countedTotal=0;
+  Object.keys(payBreakdown).forEach(k=>{
+    const sys = payBreakdown[k]||0;
+    const counted = _eodCounted[k]||0;
+    const diff = counted - sys;
+    sysTotal += sys; countedTotal += counted;
+    const el = document.getElementById(`eod-recon-diff-${k}`);
+    if(el){
+      el.style.color = diff===0?'var(--c-green)':diff>0?'var(--c-green)':'var(--c-red)';
+      el.textContent = diff===0?'✅ ຕົງ':(diff>0?'+':'')+fmt(diff);
+    }
+  });
+  const totalDiff = countedTotal - sysTotal;
+  const sysEl = document.getElementById('eod-recon-total-sys');
+  const cntEl = document.getElementById('eod-recon-total-counted');
+  const diffEl = document.getElementById('eod-recon-total-diff');
+  if(sysEl) sysEl.textContent = fmt(sysTotal);
+  if(cntEl) cntEl.textContent = fmt(countedTotal);
+  if(diffEl){
+    diffEl.style.color = totalDiff===0?'var(--c-green)':totalDiff>0?'var(--c-green)':'var(--c-red)';
+    diffEl.textContent = totalDiff===0?'✅ ຕົງ':(totalDiff>0?'+':'')+fmt(totalDiff);
+  }
 }
 
 function _updateCashDiff(cashFromBills){
@@ -6277,10 +6334,11 @@ function switchRptTab(tab, el){
   const addIncBtn = document.getElementById('rpt-add-income-btn');
   const exportBtn = document.getElementById('rpt-export-btn');
   const payoutBtn = document.getElementById('rpt-add-payout-btn');
-  if(addBtn)    addBtn.style.display    = tab==='expense' ? '' : 'none';
-  if(addIncBtn) addIncBtn.style.display = tab==='expense' ? '' : 'none';
-  if(exportBtn) exportBtn.style.display = tab==='consign' ? 'none' : '';
-  if(payoutBtn) payoutBtn.style.display = tab==='consign' ? '' : 'none';
+  const isCashier = S.user?.role==='cashier'; // view-only: no add/edit, no CSV export
+  if(addBtn)    addBtn.style.display    = (tab==='expense' && !isCashier) ? '' : 'none';
+  if(addIncBtn) addIncBtn.style.display = (tab==='expense' && !isCashier) ? '' : 'none';
+  if(exportBtn) exportBtn.style.display = (tab!=='consign' && !isCashier) ? '' : 'none';
+  if(payoutBtn) payoutBtn.style.display = (tab==='consign' && !isCashier) ? '' : 'none';
 
   if(tab==='summary') renderSummaryTab();
   if(tab==='expense') renderExpenseTab();
@@ -6665,6 +6723,7 @@ function renderSummaryTab(){
   if(g('sum-vat-val'))      g('sum-vat-val').textContent=fmt(totalVat);
   if(g('sum-inc-vat-val'))  g('sum-inc-vat-val').textContent=fmt(grandTotal);
   if(g('sum-bill-val'))     g('sum-bill-val').textContent=bills;
+  if(g('sum-download-btn')) g('sum-download-btn').style.display = S.user?.role==='cashier' ? 'none' : '';
   if(g('rpt-total-exp'))    g('rpt-total-exp').textContent=fmt(totalExp);
   if(g('rpt-profit-val')){ g('rpt-profit-val').textContent=fmt(Math.abs(profit)); g('rpt-profit-val').style.color=profit>=0?'var(--c-blue)':'var(--c-red)'; }
   if(g('rpt-profit-label')) g('rpt-profit-label').textContent=profit>=0?'ກຳໄລ':'ຂາດທຶນ';
@@ -8523,6 +8582,7 @@ function renderExpTrendYear(){
 
 // ── ADD / EDIT EXPENSE ──
 function openAddExpenseModal(){
+  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍງານໄດ້ຢ່າງດຽວ ບໍ່ສາມາດບັນທຶກໄດ້','error'); return; }
   document.getElementById('exp-modal-title').textContent = '➕ ບັນທຶກລາຍຈ່າຍ';
   document.getElementById('exp-edit-id').value = '';
   document.getElementById('exp-name').value   = '';
@@ -8657,6 +8717,7 @@ function renderConsignTab(){
 
 /* ── ຈ່າຍເງິນຝາກຂາຍ — modal ── */
 function openConsignPayoutModal(){
+  if(S.user?.role==='cashier'){ toast('Cashier ເບິ່ງລາຍງານໄດ້ຢ່າງດຽວ ບໍ່ສາມາດບັນທຶກໄດ້','error'); return; }
   const suppliers = consignSuppliers();
   const today = new Date().toISOString().slice(0,10);
   const ov = document.createElement('div');
