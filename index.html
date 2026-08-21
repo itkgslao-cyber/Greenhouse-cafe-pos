@@ -3132,6 +3132,9 @@ let ROLES_DATA = [
 
 let BILLS = []
 let AUDIT_LOG = []
+// ✅ ໂຕລະບຸ browser/session ນີ້ ໃຊ້ແກ້ bug ຈຳນວນອໍເດີ້ QR ຄູນ 2
+// (ຕົນເອງບໍ່ຄວນປະມວນຜົນ order ຂອງຕົນເອງຄືນຈາກ Firebase ອີກຄັ້ງ ຫຼັງຈາກໄດ້ເພີ່ມ local ໄປແລ້ວ)
+const SESSION_ID = 'sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
 let S = {
   role:'admin', user:null, view:'dashboard',
   posTable:null, posItems:{}, discount:0, discType:'percent',
@@ -11702,6 +11705,12 @@ function fbListenLoyaltyConfig(){
 }
 
 function fbHandleNewOrder(ord){
+  // ✅ ແກ້ bug ຈຳນວນຄູນ 2: browser ທີ່ສົ່ງ order ນີ້ເອງ (ລູກຄ້າ) ໄດ້ເພີ່ມ local ໄປແລ້ວ
+  // ຕອນກົດຢືນຢັນ — ຖ້າ order ນີ້ echo ກັບມາຫາຕົນເອງຈາກ Firebase ໃຫ້ຂ້າມ (ບໍ່ບວກຊ້ຳ)
+  if(ord.origin && ord.origin === SESSION_ID){
+    if(fbDB) fbDB.ref(BRANCH_PATH+'qr_orders/'+ord.orderId).update({status:'received'}).catch(e=>{});
+    return;
+  }
   const t=TABLES.find(x=>String(x.id)===String(ord.tableId));
   if(!t) return;
   const items=ord.items||[];
@@ -11728,7 +11737,7 @@ function fbSendOrder(tableId, tableName, items, remark){
   const orderId='ord_'+Date.now();
   const payload = { orderId, tableId, tableName, items,
     time:new Date().toLocaleTimeString('lo-LA'),
-    status:'pending', ts:Date.now() };
+    status:'pending', ts:Date.now(), origin:SESSION_ID };
   if(remark) payload.remark = remark;
   fbDB.ref(BRANCH_PATH+'qr_orders/'+orderId).set(payload).catch(e=>console.warn('fbSendOrder:',e));
 }
