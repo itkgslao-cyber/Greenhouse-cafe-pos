@@ -1802,6 +1802,15 @@ body{font-family:'Noto Sans Lao','IBM Plex Sans Thai',sans-serif;background:var(
         <div id="eod-content" style="padding:0 0 32px;"></div>
       </section>
 
+      <section id="view-promotions" class="view hidden">
+        <div class="page-header">
+          <div class="page-header-left"><div class="title">🎉 ໂປຣໂມຊັ່ນ</div><div class="sub">ກຳນົດຊ່ວງໂປຣໂມຊັ່ນລ່ວງໜ້າ — Cashier ໃຊ້ໄດ້ໂດຍບໍ່ຕ້ອງພິມເຫດຜົນ/ຂໍອະນຸມັດ</div></div>
+        </div>
+        <div id="promo-perms-panel" style="margin-bottom:16px"></div>
+        <div id="promo-form-panel" style="margin-bottom:16px"></div>
+        <div id="promo-list"></div>
+      </section>
+
       <section id="view-settings" class="view hidden">
         <div class="page-header">
           <div class="page-header-left"><div class="title">ການຕັ້ງຄ່າ</div><div class="sub">ຮ້ານ, ລະບົບ, ການຊຳລະ</div></div>
@@ -3091,6 +3100,7 @@ const NC = {
   loyalty:  {label:'Loyalty Points', icon:'🎁', sec:'ຈັດການ'},
   reports:  {label:'ລາຍງານ',         icon:'📊', sec:'ລາຍງານ'},
   eod:      {label:'ສິ້ນວັນ',         icon:'🌙', sec:'ລາຍງານ'},
+  promotions: {label:'ໂປຣໂມຊັ່ນ',    icon:'🎉', sec:'ຈັດການ'},
   settings: {label:'ຕັ້ງຄ່າ',        icon:'⚙️', sec:'ລະບົບ'},
   users:    {label:'ຜູ້ໃຊ້',         icon:'👥', sec:'ລະບົບ'},
   roles:    {label:'ບົດບາດ',         icon:'🛡️', sec:'ລະບົບ'},
@@ -3132,6 +3142,9 @@ let ROLES_DATA = [
 
 let BILLS = []
 let AUDIT_LOG = []
+// ── ໂປຣໂມຊັ່ນ: Admin ກຳນົດວັນທີ+ຊື່ລ່ວງໜ້າ, Cashier ເລືອກໃຊ້ໄດ້ໂດຍບໍ່ຕ້ອງພິມເຫດຜົນ/ຂໍອະນຸມັດ ──
+let PROMOTIONS = []; // {id,name,startDate,endDate,note,createdBy,createdAt}
+let PROMO_PERMS = { manager:{view:false,manage:false}, staff:{view:false,manage:false}, cashier:{view:false,manage:false}, accounting:{view:false,manage:false} };
 // ✅ ໂຕລະບຸ browser/session ນີ້ ໃຊ້ແກ້ bug ຈຳນວນອໍເດີ້ QR ຄູນ 2
 // (ຕົນເອງບໍ່ຄວນປະມວນຜົນ order ຂອງຕົນເອງຄືນຈາກ Firebase ອີກຄັ້ງ ຫຼັງຈາກໄດ້ເພີ່ມ local ໄປແລ້ວ)
 const SESSION_ID = 'sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
@@ -3833,7 +3846,9 @@ function _completeLogin(matched, u){
   const d=new Date();
   const el=document.getElementById('dash-date');
   const _lm=['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ']; if(el)el.textContent=`ວັນທີ ${d.getDate()} ${_lm[d.getMonth()]} ${d.getFullYear()}`;
-  buildNav(rc.navs);
+  const _navs = [...rc.navs];
+  if(canViewPromotions() && !_navs.includes('promotions')) _navs.push('promotions');
+  buildNav(_navs);
   // Show/hide reset tab based on role
   const _rt = document.getElementById('nav-reset-tab');
   if(_rt) _rt.style.display = (S.role==='admin') ? 'flex' : 'none';
@@ -3941,7 +3956,7 @@ function buildNav(navs){
   const nav=document.getElementById('sb-nav'); nav.innerHTML='';
   let lastSec='';
   // Fixed order: logical grouping
-  const ORDER = ['dashboard','pos','menu','stock','loyalty','reports','eod','settings'];
+  const ORDER = ['dashboard','pos','menu','stock','loyalty','promotions','reports','eod','settings'];
   ORDER.forEach(k=>{
     if(!navs.includes(k)) return;
     const c=NC[k];
@@ -4010,7 +4025,7 @@ function renderView(v){
     setTab('roles', document.querySelectorAll('.set-nav-item')[7] || {classList:{add:()=>{},remove:()=>{}}});
     return;
   }
-  ({dashboard:renderDash,menu:renderMenuMgmt,users:renderUsers,roles:renderRoles,reports:renderReportsView,eod:renderEOD,stock:renderStockView}[v]||function(){})();
+  ({dashboard:renderDash,menu:renderMenuMgmt,users:renderUsers,roles:renderRoles,reports:renderReportsView,eod:renderEOD,stock:renderStockView,promotions:renderPromotions}[v]||function(){})();
 }
 
 /* ================================================================
@@ -5494,11 +5509,23 @@ function tomSetFree(key){
   if(val === null) return;
   const n = Math.max(0, Math.min(it.qty, parseInt(val)||0));
   if(n<=0){ it.free = 0; tomRenderCart(); tomRenderSummary(); return; }
+
+  // ✅ ຖ້າມີໂປຣໂມຊັ່ນ Active ຢູ່ — ໃຫ້ເລືອກແທນພິມເຫດຜົນ/ຂໍອະນຸມັດ (Admin ອະນຸມັດລ່ວງໜ້າແລ້ວຕອນຕັ້ງໂປຣໂມຊັ່ນ)
+  const actives = activePromotions();
+  if(actives.length){
+    _openPromoPickForFree(key, n, actives);
+    return;
+  }
+  _tomFreeManualFlow(key, n);
+}
+function _tomFreeManualFlow(key, n){
+  const it = tomCart[key];
+  if(!it) return;
   const reason = prompt(`ເຫດຜົນທີ່ໃຫ້ຟຣີ x${n} (ບັງຄັບ):`, '');
   if(!reason || !reason.trim()){ toast('ຕ້ອງໃສ່ເຫດຜົນ — ຍົກເລີກການໃຫ້ຟຣີ','error'); return; }
   const isMgmt = S.role==='admin' || S.role==='manager';
   if(isMgmt){
-    _commitFree(key, n, reason.trim(), '');
+    _commitFree(key, n, reason.trim(), '', null);
     return;
   }
   // ບໍ່ແມ່ນ Admin/Manager — ຕ້ອງມີລະຫັດອະນຸມັດທຸກຄັ້ງ
@@ -5510,13 +5537,44 @@ function tomSetFree(key){
   _pinApprovalAction='free';
   openModal('modal-pin-approval');
 }
-function _commitFree(key, n, reason, approver){
+function _openPromoPickForFree(key, n, actives){
+  const it = tomCart[key];
+  if(!it) return;
+  const ov = document.createElement('div');
+  ov.id = '_promo_pick_overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  const optsHtml = actives.map(p=>`
+    <div onclick="_confirmPromoFree('${key}',${n},'${p.id}')" style="cursor:pointer;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;margin-bottom:8px;background:var(--panel-bg2)">
+      <div style="font-weight:800;font-size:13px;color:var(--t1)">${p.name}</div>
+      <div style="font-size:11px;color:var(--t3)">${p.startDate} → ${p.endDate}</div>
+    </div>`).join('');
+  ov.innerHTML = `
+    <div style="background:var(--panel-bg);border-radius:16px;padding:24px;width:380px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;color:var(--t1)">🎁 ເລືອກໂປຣໂມຊັ່ນ</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:14px">${it.name} x${n} — ເລືອກໂປຣໂມຊັ່ນທີ່ກົງກັນ (ບໍ່ຕ້ອງພິມເຫດຜົນ/ຂໍອະນຸມັດ)</div>
+      ${optsHtml}
+      <button onclick="_promoFreeUseManual('${key}',${n})" style="width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--panel-bg2);color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">✖ ບໍ່ໃຊ້ໂປຣໂມຊັ່ນ (ພິມເຫດຜົນເອງ)</button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+function _promoFreeUseManual(key, n){
+  document.getElementById('_promo_pick_overlay')?.remove();
+  _tomFreeManualFlow(key, n);
+}
+function _confirmPromoFree(key, n, promoId){
+  document.getElementById('_promo_pick_overlay')?.remove();
+  const promo = (PROMOTIONS||[]).find(p=>String(p.id)===String(promoId));
+  if(!promo) return;
+  _commitFree(key, n, `ໂປຣໂມຊັ່ນ: ${promo.name}`, 'ລ່ວງໜ້າ (ໂປຣໂມຊັ່ນ)', promo.id);
+}
+function _commitFree(key, n, reason, approver, promoId){
   const it = tomCart[key];
   if(!it) return;
   it.free = n;
+  if(promoId) it.promoId = promoId;
   tomRenderCart();
   tomRenderSummary();
-  logAudit('free', `${it.name} x${n} ຟຣີ`, reason, approver||'');
+  logAudit('free', `${it.name} x${n} ຟຣີ`, reason, approver||'', {promoId: promoId||null, qty:n, value: (it.price||0)*n});
   toast(`✅ ໃຫ້ຟຣີ ${it.name} x${n} ແລ້ວ`,'success');
 }
 
@@ -11245,7 +11303,8 @@ function initFirebase(){
     fbListenStore();        // ຟັງ store info real-time
     fbListenUsers();        // ຟັງ users real-time
     fbListenRoles();
-    fbListenAuditLog();        // ຟັງ roles real-time
+    fbListenAuditLog();
+    fbListenPromotions();        // ຟັງ roles real-time
   } catch(err){ console.warn('Firebase init failed:', err.message); }
 }
 
@@ -11593,7 +11652,7 @@ function fbListenRoles(){
 }
 
 /* ── Audit Log — ບັນທຶກການກະທຳສ່ຽງ (ສ່ວນຫຼຸດ/ໃຫ້ຟຣີ/Void) ລວມສູນ ໃຫ້ Admin ກວດຄືນໄດ້ ── */
-function logAudit(action, detail, reason, approver){
+function logAudit(action, detail, reason, approver, extra){
   const entry = {
     id: 'aud_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
     ts: Date.now(),
@@ -11601,7 +11660,8 @@ function logAudit(action, detail, reason, approver){
     time: (typeof timeNow==='function') ? timeNow() : new Date().toLocaleTimeString('lo-LA'),
     user: S.user?.name || '?',
     role: S.role || '?',
-    action, detail: detail||'', reason: reason||'', approver: approver||''
+    action, detail: detail||'', reason: reason||'', approver: approver||'',
+    ...(extra||{})
   };
   AUDIT_LOG.unshift(entry);
   if(AUDIT_LOG.length>500) AUDIT_LOG.length=500;
@@ -11617,6 +11677,158 @@ function fbListenAuditLog(){
     AUDIT_LOG.length=0; arr.forEach(x=>AUDIT_LOG.push(x));
     if(typeof renderAuditLog==='function') renderAuditLog();
   });
+}
+
+/* ── ໂປຣໂມຊັ່ນ ── */
+function activePromotions(){
+  const today = new Date().toISOString().slice(0,10);
+  return (PROMOTIONS||[]).filter(p=>p.startDate<=today && today<=p.endDate);
+}
+function canViewPromotions(){ return S.role==='admin' || !!(PROMO_PERMS[S.role]&&PROMO_PERMS[S.role].view); }
+function canManagePromotions(){ return S.role==='admin' || !!(PROMO_PERMS[S.role]&&PROMO_PERMS[S.role].manage); }
+function fbListenPromotions(){
+  if(!fbDB) return;
+  fbDB.ref(BRANCH_PATH+'promotions').on('value', snap=>{
+    const d=snap.val();
+    const arr = d ? (Array.isArray(d) ? d.filter(Boolean) : Object.values(d)) : [];
+    PROMOTIONS.length=0; arr.forEach(x=>PROMOTIONS.push(x));
+    if(typeof renderPromotions==='function' && S.view==='promotions') renderPromotions();
+  });
+  fbDB.ref(BRANCH_PATH+'promoPerms').on('value', snap=>{
+    const d=snap.val(); if(!d) return;
+    Object.assign(PROMO_PERMS, d);
+    if(typeof renderPromotions==='function' && S.view==='promotions') renderPromotions();
+    const _navP=document.getElementById('nav-promotions');
+    if(_navP) _navP.style.display = canViewPromotions() ? 'flex' : 'none';
+  });
+}
+function fbSavePromotions(){ if(fbDB) fbDB.ref(BRANCH_PATH+'promotions').set(PROMOTIONS).catch(e=>{}); }
+function fbSavePromoPerms(){ if(fbDB) fbDB.ref(BRANCH_PATH+'promoPerms').set(PROMO_PERMS).catch(e=>{}); }
+
+function promoUsageStats(promoId){
+  const entries = (AUDIT_LOG||[]).filter(x=>x.promoId===promoId);
+  const qty = entries.reduce((a,e)=>a+(e.qty||0),0);
+  const value = entries.reduce((a,e)=>a+(e.value||0),0);
+  return {count:entries.length, qty, value};
+}
+function promoStatus(p){
+  const today = new Date().toISOString().slice(0,10);
+  if(today < p.startDate) return {lbl:'ຍັງບໍ່ເຖິງ', clr:'#6B7280'};
+  if(today > p.endDate)   return {lbl:'ໝົດອາຍຸແລ້ວ', clr:'#9CA3AF'};
+  return {lbl:'🟢 Active', clr:'#16A34A'};
+}
+let _editPromoId = null;
+function openPromoForm(id){
+  if(!canManagePromotions()){ toast('ບໍ່ມີສິດຈັດການໂປຣໂມຊັ່ນ','error'); return; }
+  _editPromoId = id || null;
+  const p = id ? PROMOTIONS.find(x=>String(x.id)===String(id)) : null;
+  const box = document.getElementById('promo-form-panel');
+  box.innerHTML = `
+    <div class="card">
+      <div style="font-weight:800;font-size:14px;margin-bottom:12px">${p?'✏️ ແກ້ໄຂໂປຣໂມຊັ່ນ':'➕ ສ້າງໂປຣໂມຊັ່ນໃໝ່'}</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><label class="form-label">ຊື່ໂປຣໂມຊັ່ນ *</label><input class="form-input" id="promo-name" placeholder="ເຊັ່ນ: ຊື້ 2 ແຖມ 1" value="${p?p.name.replace(/"/g,'&quot;'):''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ວັນທີເລີ່ມ *</label><input class="form-input" type="date" id="promo-start" value="${p?p.startDate:''}"></div>
+        <div class="form-group"><label class="form-label">ວັນທີສິ້ນສຸດ *</label><input class="form-input" type="date" id="promo-end" value="${p?p.endDate:''}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">ໝາຍເຫດ (ທາງເລືອກ)</label><input class="form-input" id="promo-note" placeholder="ລາຍລະອຽດເພີ່ມ..." value="${p&&p.note?p.note.replace(/"/g,'&quot;'):''}"></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn" style="border:1.5px solid var(--bdr)" onclick="cancelPromoForm()">ຍົກເລີກ</button>
+        <button class="btn btn-primary" onclick="savePromo()">💾 ບັນທຶກ</button>
+      </div>
+    </div>`;
+}
+function cancelPromoForm(){ _editPromoId=null; document.getElementById('promo-form-panel').innerHTML=''; }
+function savePromo(){
+  if(!canManagePromotions()){ toast('ບໍ່ມີສິດຈັດການໂປຣໂມຊັ່ນ','error'); return; }
+  const name=(document.getElementById('promo-name').value||'').trim();
+  const startDate=document.getElementById('promo-start').value;
+  const endDate=document.getElementById('promo-end').value;
+  const note=(document.getElementById('promo-note').value||'').trim();
+  if(!name||!startDate||!endDate){ toast('ກະລຸນາໃສ່ຊື່ ແລະ ວັນທີໃຫ້ຄົບ','error'); return; }
+  if(startDate>endDate){ toast('ວັນທີເລີ່ມຕ້ອງບໍ່ຫຼັງວັນທີສິ້ນສຸດ','error'); return; }
+  if(_editPromoId){
+    const p = PROMOTIONS.find(x=>String(x.id)===String(_editPromoId));
+    if(p){ p.name=name; p.startDate=startDate; p.endDate=endDate; p.note=note; }
+  } else {
+    PROMOTIONS.push({ id:'promo_'+Date.now(), name, startDate, endDate, note, createdBy:S.user?.name||'Admin', createdAt:Date.now() });
+  }
+  fbSavePromotions();
+  cancelPromoForm();
+  renderPromotions();
+  toast('✅ ບັນທຶກໂປຣໂມຊັ່ນແລ້ວ','success');
+}
+function deletePromo(id){
+  if(!canManagePromotions()){ toast('ບໍ່ມີສິດຈັດການໂປຣໂມຊັ່ນ','error'); return; }
+  if(!confirm('ລຶບໂປຣໂມຊັ່ນນີ້? (ປະຫວັດການໃຊ້ຈະຍັງຄ້າງຢູ່ໃນ Audit Log)')) return;
+  const idx = PROMOTIONS.findIndex(x=>String(x.id)===String(id));
+  if(idx>-1) PROMOTIONS.splice(idx,1);
+  fbSavePromotions();
+  renderPromotions();
+  toast('✅ ລຶບແລ້ວ','success');
+}
+function togglePromoPerm(role, kind){
+  if(S.role!=='admin'){ toast('ສະເພາະ Admin ເທົ່ານັ້ນ','error'); return; }
+  if(!PROMO_PERMS[role]) PROMO_PERMS[role]={view:false,manage:false};
+  PROMO_PERMS[role][kind] = !PROMO_PERMS[role][kind];
+  if(kind==='manage' && PROMO_PERMS[role][kind]) PROMO_PERMS[role].view = true; // manage implies view
+  fbSavePromoPerms();
+  renderPromotions();
+  const _navP=document.getElementById('nav-promotions');
+  if(_navP) _navP.style.display = canViewPromotions() ? 'flex' : 'none';
+}
+function renderPromotions(){
+  const permsBox = document.getElementById('promo-perms-panel');
+  if(permsBox){
+    if(S.role==='admin'){
+      const roleLbl = {manager:'ຜູ້ຈັດການ', staff:'ພະນັກງານ', cashier:'Cashier', accounting:'ບັນຊີ'};
+      permsBox.innerHTML = `<div class="card">
+        <div style="font-weight:800;font-size:13px;margin-bottom:10px">🔐 ສິດອະນຸຍາດ — ໃຫ້ Role ອື່ນເຫັນ/ຈັດການໜ້ານີ້ໄດ້ບໍ່</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        ${Object.keys(roleLbl).map(r=>`
+          <div style="border:1.5px solid var(--bdr);border-radius:10px;padding:10px 12px">
+            <div style="font-weight:700;font-size:12px;margin-bottom:6px">${roleLbl[r]}</div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;cursor:pointer"><input type="checkbox" ${PROMO_PERMS[r]?.view?'checked':''} onchange="togglePromoPerm('${r}','view')"> ເຫັນ/ໃຊ້ໄດ້</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" ${PROMO_PERMS[r]?.manage?'checked':''} onchange="togglePromoPerm('${r}','manage')"> ສ້າງ/ແກ້ໄຂໄດ້</label>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    } else {
+      permsBox.innerHTML = '';
+    }
+  }
+
+  const canManage = canManagePromotions();
+  const formBox = document.getElementById('promo-form-panel');
+  if(formBox && !formBox.innerHTML && canManage){
+    formBox.innerHTML = `<button class="btn btn-primary" onclick="openPromoForm()">➕ ສ້າງໂປຣໂມຊັ່ນໃໝ່</button>`;
+  } else if(formBox && !canManage){
+    formBox.innerHTML = '';
+  }
+
+  const listBox = document.getElementById('promo-list');
+  if(!listBox) return;
+  const sorted = [...(PROMOTIONS||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  if(!sorted.length){ listBox.innerHTML = `<div style="font-size:12px;color:var(--t3);padding:20px;text-align:center">ຍັງບໍ່ມີໂປຣໂມຊັ່ນ</div>`; return; }
+  listBox.innerHTML = sorted.map(p=>{
+    const st = promoStatus(p);
+    const usage = promoUsageStats(p.id);
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div style="font-weight:800;font-size:14px">${p.name} <span style="font-size:10px;font-weight:700;color:${st.clr}">● ${st.lbl}</span></div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">📅 ${p.startDate} → ${p.endDate}${p.note?' · '+p.note:''}</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:6px">🎁 ໃຫ້ຟຣີໄປແລ້ວ: <b>${usage.qty}</b> ຈຳນວນ (${usage.count} ຄັ້ງ) · ມູນຄ່າປະມານ <b>${fmt(usage.value)}</b></div>
+        </div>
+        ${canManage ? `<div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" onclick="openPromoForm('${p.id}')">✏️</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--c-red)" onclick="deletePromo('${p.id}')">🗑️</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 function renderAuditLog(){
   const box = document.getElementById('auditlog-list');
